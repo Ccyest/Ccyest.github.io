@@ -32,10 +32,10 @@ const i18n = {
   'research.infra.short':  { en: 'Infrastructure',  zh: '基础设施' },
 
   'research.opt.title':  { en: 'Inference Optimization',           zh: '推理优化' },
-  'research.opt.item1':  { en: 'KV cache compression',             zh: 'KV 缓存压缩' },
-  'research.opt.item2':  { en: 'Quantization (FP8 / INT4)',        zh: '量化 (FP8 / INT4)' },
-  'research.opt.item3':  { en: 'Speculative decoding',             zh: '推测解码' },
-  'research.opt.item4':  { en: 'Custom CUDA kernel development',   zh: '自研 CUDA 内核开发' },
+  'research.opt.item1':  { en: 'CUDA Graph capture & optimization',  zh: 'CUDA Graph 捕获与优化' },
+  'research.opt.item2':  { en: 'Sampler vectorization & tensorization', zh: '采样器向量化与张量化' },
+  'research.opt.item3':  { en: 'Encoder-stage optimization (LRU caching, batched encoding)', zh: '编码器阶段优化（LRU 缓存、批量编码）' },
+  'research.opt.item4':  { en: 'GPU profiling & benchmarking (H100 / H200 / H20)', zh: 'GPU 性能分析与基准测试 (H100 / H200 / H20)' },
   'research.opt.short':  { en: 'Optimization',      zh: '优化' },
 
   'blog.title':        { en: 'Blog & Videos',                    zh: '博客与视频' },
