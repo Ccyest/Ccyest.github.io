@@ -53,6 +53,9 @@ const i18n = {
   'resume.education':  { en: 'Education',                zh: '教育经历' },
   'resume.skills':     { en: 'Skills',                   zh: '技能' },
   'resume.download':   { en: 'Download PDF',             zh: '下载 PDF' },
+  'resume.skills.systems': { en: 'LLM Inference & Systems', zh: 'LLM 推理与系统' },
+  'resume.skills.infra':   { en: 'Infra & Tools',           zh: '基础设施与工具' },
+  'resume.skills.lang':    { en: 'Programming Languages',   zh: '编程语言' },
 
   'resume.oss1.date':  { en: 'April 2026 – Present',    zh: '2026年4月 – 至今' },
   'resume.oss1.title': { en: 'SGLang-Omni — Core Contributor (Lead Higgs TTS Optimization)',

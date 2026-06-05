@@ -163,6 +163,9 @@
   <section class="section" id="resume">
     <div class="section-inner">
       <h2 class="section-title anim-item" data-i18n="resume.title">Resume</h2>
+      <div class="resume-download resume-download--top anim-item">
+        <a href="assets/Yichi-infra.pdf" target="_blank" class="btn btn-primary" data-i18n="resume.download">Download PDF</a>
+      </div>
 
       <!-- Open Source & Projects -->
       <div class="resume-block anim-item">
@@ -249,27 +252,47 @@
       <!-- Skills -->
       <div class="resume-block anim-item">
         <h3 class="rb-heading" data-i18n="resume.skills">Skills</h3>
-        <div class="skill-tags">
-          <span class="tag">Python</span>
-          <span class="tag">C / C++</span>
-          <span class="tag">Go</span>
-          <span class="tag">TypeScript</span>
-          <span class="tag">Java</span>
-          <span class="tag">CUDA</span>
-          <span class="tag">SGLang</span>
-          <span class="tag">PyTorch</span>
-          <span class="tag">LangChain / LangGraph</span>
-          <span class="tag">React Native</span>
-          <span class="tag">Docker</span>
-          <span class="tag">Linux</span>
-          <span class="tag">Git</span>
-          <span class="tag">GitHub Actions CI/CD</span>
-          <span class="tag">SQL</span>
+        <div class="skill-group">
+          <p class="skill-label" data-i18n="resume.skills.systems">LLM Inference & Systems</p>
+          <div class="skill-tags">
+            <span class="tag">SGLang</span>
+            <span class="tag">Inference Serving</span>
+            <span class="tag">Multi-GPU / Tensor Parallelism</span>
+            <span class="tag">Disaggregated Inference</span>
+            <span class="tag">CUDA Graph Optimization</span>
+            <span class="tag">Quantization</span>
+            <span class="tag">Benchmarking</span>
+            <span class="tag">Regression Testing</span>
+            <span class="tag">RAG</span>
+            <span class="tag">LangChain / LangGraph</span>
+          </div>
         </div>
-      </div>
-
-      <div class="resume-download anim-item">
-        <a href="assets/Yichi-infra.pdf" target="_blank" class="btn btn-primary" data-i18n="resume.download">Download PDF</a>
+        <div class="skill-group">
+          <p class="skill-label" data-i18n="resume.skills.infra">Infra & Tools</p>
+          <div class="skill-tags">
+            <span class="tag">CUDA</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Linux</span>
+            <span class="tag">Git</span>
+            <span class="tag">GitHub Actions CI/CD</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <p class="skill-label" data-i18n="resume.skills.lang">Programming Languages</p>
+          <div class="skill-tags">
+            <span class="tag">Python</span>
+            <span class="tag">C</span>
+            <span class="tag">C++</span>
+            <span class="tag">Go</span>
+            <span class="tag">Java</span>
+            <span class="tag">TypeScript</span>
+            <span class="tag">HTML / CSS / JavaScript</span>
+            <span class="tag">SQL</span>
+            <span class="tag">R</span>
+            <span class="tag">Arm64</span>
+            <span class="tag">x86-64</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
