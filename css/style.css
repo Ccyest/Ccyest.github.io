@@ -61,7 +61,12 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 64px;
   -webkit-text-size-adjust: 100%;
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
 }
 
 body {
@@ -885,8 +890,18 @@ button {
     display: flex;
   }
 
+  .nav-links a {
+    font-size: 16px;
+    padding: 8px 0;
+  }
+
   .nav-hamburger {
     display: flex;
+  }
+
+  .hero {
+    min-height: calc(100vh - var(--nav-h));
+    min-height: calc(100dvh - var(--nav-h));
   }
 
   .hero-inner {
@@ -904,6 +919,7 @@ button {
   }
 
   .hero-desc {
+    max-width: none;
     margin-left: auto;
     margin-right: auto;
   }
@@ -912,13 +928,14 @@ button {
     justify-content: center;
   }
 
+  .btn {
+    min-height: 44px;
+    padding: 12px 22px;
+  }
+
   .photo-frame {
     width: 200px;
     height: 200px;
-  }
-
-  .photo-placeholder {
-    font-size: 52px;
   }
 
   .section {
@@ -934,13 +951,22 @@ button {
     margin-bottom: 40px;
   }
 
-  .research-grid {
+  .research-grid,
+  .research-grid--two {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
   .research-card {
     padding: 28px 24px;
+  }
+
+  .research-card:hover {
+    transform: none;
+  }
+
+  .blog-filters {
+    flex-wrap: wrap;
   }
 
   .blog-grid {
@@ -951,6 +977,28 @@ button {
     padding: 24px;
   }
 
+  .blog-card:hover {
+    transform: none;
+  }
+
+  .tl-title {
+    font-size: 16px;
+    word-break: break-word;
+  }
+
+  .tl-desc {
+    font-size: 14px;
+  }
+
+  .tag {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+
+  .resume-download--top {
+    text-align: center;
+  }
+
   .footer-inner {
     flex-direction: column-reverse;
     gap: 12px;
@@ -959,6 +1007,10 @@ button {
 
   .diagram-svg {
     max-width: 300px;
+  }
+
+  .scroll-hint {
+    display: none;
   }
 }
 
@@ -974,5 +1026,46 @@ button {
   .photo-frame {
     width: 160px;
     height: 160px;
+  }
+
+  .nav-inner {
+    padding: 0 16px;
+  }
+
+  .section {
+    padding: 60px 16px;
+  }
+
+  .research-card {
+    padding: 24px 20px;
+  }
+
+  .blog-card {
+    padding: 20px;
+  }
+
+  .bc-title {
+    font-size: 17px;
+  }
+
+  .timeline {
+    padding-left: 20px;
+  }
+
+  .tl-dot {
+    margin-left: -20px;
+  }
+
+  .timeline::before {
+    left: 4px;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .research-card:hover,
+  .blog-card:hover,
+  .photo-frame:hover {
+    transform: none;
+    box-shadow: var(--shadow-sm);
   }
 }
