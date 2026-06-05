@@ -77,47 +77,35 @@
       <h2 class="section-title anim-item" data-i18n="research.title">Research Interests</h2>
       <p class="section-subtitle anim-item" data-i18n="research.subtitle">Focused on making large language models faster, cheaper, and more accessible.</p>
 
-      <div class="research-grid">
-        <!-- Card 1: LLM Serving -->
+      <div class="research-grid research-grid--two">
+        <!-- Card 1: LLM Infrastructure -->
         <div class="research-card anim-item">
           <div class="rc-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/>
             </svg>
           </div>
-          <h3 class="rc-title" data-i18n="research.serving.title">LLM Serving</h3>
-          <ul class="rc-list">
-            <li data-i18n="research.serving.item1">Request scheduling & batching</li>
-            <li data-i18n="research.serving.item2">Prefix caching strategies</li>
-            <li data-i18n="research.serving.item3">Multi-modal serving pipelines</li>
-            <li data-i18n="research.serving.item4">Throughput & latency optimization</li>
-          </ul>
-        </div>
-
-        <!-- Card 2: LLM Infrastructure -->
-        <div class="research-card anim-item">
-          <div class="rc-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/><line x1="5" y1="19" x2="19" y2="19"/>
-            </svg>
-          </div>
           <h3 class="rc-title" data-i18n="research.infra.title">LLM Infrastructure</h3>
+          <p class="rc-subtitle" data-i18n="research.infra.subtitle">Building serving frameworks for TTS / Omni model architectures</p>
           <ul class="rc-list">
-            <li data-i18n="research.infra.item1">Distributed inference systems</li>
-            <li data-i18n="research.infra.item2">GPU cluster orchestration</li>
-            <li data-i18n="research.infra.item3">Model deployment pipelines</li>
-            <li data-i18n="research.infra.item4">System reliability & scaling</li>
+            <li data-i18n="research.infra.item1">Request scheduling & batching</li>
+            <li data-i18n="research.infra.item2">Prefix caching strategies</li>
+            <li data-i18n="research.infra.item3">Multi-modal serving pipelines</li>
+            <li data-i18n="research.infra.item4">Distributed inference systems</li>
+            <li data-i18n="research.infra.item5">GPU cluster orchestration</li>
+            <li data-i18n="research.infra.item6">Model deployment & system reliability</li>
           </ul>
         </div>
 
-        <!-- Card 3: Inference Optimization -->
+        <!-- Card 2: Optimization & Benchmarking -->
         <div class="research-card anim-item">
           <div class="rc-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
           </div>
-          <h3 class="rc-title" data-i18n="research.opt.title">Inference Optimization</h3>
+          <h3 class="rc-title" data-i18n="research.opt.title">Optimization & Benchmarking</h3>
+          <p class="rc-subtitle" data-i18n="research.opt.subtitle">Runtime optimization and GPU performance profiling</p>
           <ul class="rc-list">
             <li data-i18n="research.opt.item1">CUDA Graph capture & optimization</li>
             <li data-i18n="research.opt.item2">Sampler vectorization & tensorization</li>
@@ -129,16 +117,12 @@
 
       <!-- Research Diagram -->
       <div class="research-diagram anim-item">
-        <svg class="diagram-svg" viewBox="0 0 600 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <line x1="150" y1="100" x2="300" y2="100" class="diagram-line"/>
-          <line x1="300" y1="100" x2="450" y2="100" class="diagram-line"/>
-          <line x1="150" y1="100" x2="450" y2="100" class="diagram-line diagram-line--arc"/>
-          <circle cx="150" cy="100" r="8" class="diagram-dot"/>
-          <circle cx="300" cy="100" r="8" class="diagram-dot"/>
-          <circle cx="450" cy="100" r="8" class="diagram-dot"/>
-          <text x="150" y="140" class="diagram-label" text-anchor="middle" data-i18n="research.serving.short">Serving</text>
-          <text x="300" y="140" class="diagram-label" text-anchor="middle" data-i18n="research.infra.short">Infrastructure</text>
-          <text x="450" y="140" class="diagram-label" text-anchor="middle" data-i18n="research.opt.short">Optimization</text>
+        <svg class="diagram-svg" viewBox="0 0 400 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="120" y1="80" x2="280" y2="80" class="diagram-line"/>
+          <circle cx="120" cy="80" r="8" class="diagram-dot"/>
+          <circle cx="280" cy="80" r="8" class="diagram-dot"/>
+          <text x="120" y="120" class="diagram-label" text-anchor="middle" data-i18n="research.infra.short">Infrastructure</text>
+          <text x="280" y="120" class="diagram-label" text-anchor="middle" data-i18n="research.opt.short">Optimization</text>
         </svg>
       </div>
     </div>

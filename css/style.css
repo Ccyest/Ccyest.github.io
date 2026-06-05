@@ -441,6 +441,17 @@ button {
   margin-bottom: 60px;
 }
 
+.research-grid--two {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.rc-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
 .research-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
