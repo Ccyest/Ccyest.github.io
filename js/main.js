@@ -8,8 +8,6 @@ const i18n = {
   'nav.resume':     { en: 'Resume',    zh: '简历' },
 
   'hero.greeting':  { en: "Hello, I'm",          zh: '你好，我是' },
-  'hero.tagline':   { en: 'Building the future of LLM infrastructure.',
-                      zh: '构建 LLM 基础设施的未来。' },
   'hero.desc':      { en: 'Software engineer at Salesforce and core contributor to SGLang-Omni. Focused on LLM inference serving, multi-GPU inference pipelines, and TTS model optimization.',
                       zh: 'Salesforce 软件工程师，SGLang-Omni 核心贡献者。专注于 LLM 推理服务、多 GPU 推理流水线与 TTS 模型优化。' },
 
