@@ -99,6 +99,16 @@ const i18n = {
 
 const posts = [
   {
+    type: 'blog',
+    date: '2026-06-05',
+    title: { en: 'Optimizing TTS Inference: Engineering Lessons from Profiling to Streaming in SGLang Omni',
+             zh: '优化 TTS 推理：SGLang Omni 中从性能分析到流式传输的工程实践' },
+    desc:  { en: 'A deep dive into optimizing the Higgs TTS pipeline — CUDA Graph migration, LRU caching for reference audio, and async GPU-CPU decode patterns for significant latency and throughput gains.',
+             zh: '深入优化 Higgs TTS 流水线——CUDA Graph 迁移、参考音频 LRU 缓存、异步 GPU-CPU 解码模式，实现显著的延迟降低与吞吐提升。' },
+    url: 'https://medium.com/@yichizhang602/optimizing-tts-inference-engineering-lessons-from-profiling-to-streaming-in-sglang-omni-00d06e3fc78d',
+    tags: ['SGLang', 'TTS', 'Optimization']
+  },
+  {
     type: 'video',
     date: '2025-03-15',
     title: { en: 'SGLang Cookbook Full Tutorial: Your One-Click Model Deployment Guide',
