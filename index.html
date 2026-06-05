@@ -57,13 +57,12 @@
         <p class="hero-desc anim-item" data-i18n="hero.desc">Researcher and engineer working on large language model serving systems, distributed inference infrastructure, and runtime optimization. Currently contributing to SGLang.</p>
         <div class="hero-actions anim-item">
           <a href="https://github.com/Ccyest" target="_blank" rel="noopener" class="btn btn-primary">GitHub</a>
-          <a href="#resume" class="btn btn-ghost" data-i18n="hero.contact">Resume</a>
+          <a href="https://www.linkedin.com/in/yichi-zhang2003/" target="_blank" rel="noopener" class="btn btn-ghost">LinkedIn</a>
         </div>
       </div>
       <div class="hero-photo anim-item">
         <div class="photo-frame">
-          <!-- Replace src with your actual photo -->
-          <div class="photo-placeholder" aria-label="Profile photo">YZ</div>
+          <img src="assets/photo.png" alt="Yichi Zhang">
         </div>
       </div>
     </div>
@@ -165,6 +164,72 @@
     <div class="section-inner">
       <h2 class="section-title anim-item" data-i18n="resume.title">Resume</h2>
 
+      <!-- Open Source & Projects -->
+      <div class="resume-block anim-item">
+        <h3 class="rb-heading" data-i18n="resume.opensource">Open Source & Projects</h3>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date" data-i18n="resume.oss1.date">April 2026 – Present</span>
+              <h4 class="tl-title" data-i18n="resume.oss1.title">SGLang-Omni — Core Contributor (Lead Higgs TTS Optimization)</h4>
+              <p class="tl-desc" data-i18n="resume.oss1.desc">Led the Higgs TTS inference-optimization workstream: designed optimization roadmap across encoder, AR-decode, and vocoder stages. Delivered +103% throughput, +107% audio-s/s, and −51% RTF on H200. Drove CUDA Graph capture for the autoregressive decode path.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date" data-i18n="resume.oss2.date">September 2025 – Present</span>
+              <h4 class="tl-title" data-i18n="resume.oss2.title">SGLang — OSS Contributor</h4>
+              <p class="tl-desc" data-i18n="resume.oss2.desc">Created and presented official SGLang tutorial videos (Diffusion, Cookbook). Expanded test coverage for OpenAI-compatible API endpoints across multiple PRs.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Experience -->
+      <div class="resume-block anim-item">
+        <h3 class="rb-heading" data-i18n="resume.experience">Work Experience</h3>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date" data-i18n="resume.exp1.date">July 2025 – Present</span>
+              <h4 class="tl-title" data-i18n="resume.exp1.title">Software Engineer (AMTS) — Salesforce</h4>
+              <p class="tl-place">Bellevue, WA</p>
+              <p class="tl-desc" data-i18n="resume.exp1.desc">Led Tableau Mobile end-to-end feature efforts. Delivered TabAgent, an embedded AI assistant for Tableau serving millions of users. Built a LangGraph AI agent automating bug-blitz processes, improving UX validation efficiency by 50%+.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date" data-i18n="resume.exp2.date">May 2024 – Aug 2024</span>
+              <h4 class="tl-title" data-i18n="resume.exp2.title">Software Engineer Intern — Salesforce</h4>
+              <p class="tl-place">Seattle, WA</p>
+              <p class="tl-desc" data-i18n="resume.exp2.desc">Implemented Tableau-Pulse features (React Native + Redux) shipping to 100k+ customers.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date">Sep 2023 – Dec 2023</span>
+              <h4 class="tl-title" data-i18n="resume.exp3.title">Software Engineer Intern — RevArt</h4>
+              <p class="tl-place">Santa Clara, CA</p>
+              <p class="tl-desc" data-i18n="resume.exp3.desc">Built an AI content assistant (ChatGPT APIs) generating social posts from artist prompts, reducing content-creation time by 80% and serving 10k+ artists.</p>
+            </div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-content">
+              <span class="tl-date">May 2023 – Aug 2023</span>
+              <h4 class="tl-title" data-i18n="resume.exp4.title">AI Engineer Intern — Inspur Group</h4>
+              <p class="tl-place">Shandong, China</p>
+              <p class="tl-desc" data-i18n="resume.exp4.desc">Deployed production-grade extraction models on cloud inference servers. Built a LangChain + Qwen agent to normalize heterogeneous EMR formats.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Education -->
       <div class="resume-block anim-item">
         <h3 class="rb-heading" data-i18n="resume.education">Education</h3>
@@ -172,40 +237,10 @@
           <div class="tl-item">
             <div class="tl-dot"></div>
             <div class="tl-content">
-              <span class="tl-date">2022 – 2024</span>
-              <h4 class="tl-title">M.S. Computer Science</h4>
-              <p class="tl-place" data-i18n="resume.edu1.place">University — Update this</p>
-            </div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-content">
-              <span class="tl-date">2018 – 2022</span>
-              <h4 class="tl-title">B.S. Computer Science</h4>
-              <p class="tl-place" data-i18n="resume.edu2.place">University — Update this</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Experience -->
-      <div class="resume-block anim-item">
-        <h3 class="rb-heading" data-i18n="resume.experience">Experience</h3>
-        <div class="timeline">
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-content">
-              <span class="tl-date" data-i18n="resume.exp1.date">2024 – Present</span>
-              <h4 class="tl-title" data-i18n="resume.exp1.title">Open-Source Contributor — SGLang</h4>
-              <p class="tl-desc" data-i18n="resume.exp1.desc">Contributing to SGLang's multi-modal serving pipeline, TTS inference, and benchmark infrastructure.</p>
-            </div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot"></div>
-            <div class="tl-content">
-              <span class="tl-date">2023 – 2024</span>
-              <h4 class="tl-title" data-i18n="resume.exp2.title">Role — Company (Update this)</h4>
-              <p class="tl-desc" data-i18n="resume.exp2.desc">Description of your work experience here.</p>
+              <span class="tl-date">Aug 2021 – May 2025</span>
+              <h4 class="tl-title" data-i18n="resume.edu1.title">B.A. Computer Science & Mathematics (Double Major)</h4>
+              <p class="tl-place" data-i18n="resume.edu1.place">University of Virginia (UVA)</p>
+              <p class="tl-desc" data-i18n="resume.edu1.honor">Graduated with High Distinction.</p>
             </div>
           </div>
         </div>
@@ -216,20 +251,25 @@
         <h3 class="rb-heading" data-i18n="resume.skills">Skills</h3>
         <div class="skill-tags">
           <span class="tag">Python</span>
-          <span class="tag">C++</span>
+          <span class="tag">C / C++</span>
+          <span class="tag">Go</span>
+          <span class="tag">TypeScript</span>
+          <span class="tag">Java</span>
           <span class="tag">CUDA</span>
+          <span class="tag">SGLang</span>
           <span class="tag">PyTorch</span>
-          <span class="tag">Triton</span>
-          <span class="tag">Distributed Systems</span>
+          <span class="tag">LangChain / LangGraph</span>
+          <span class="tag">React Native</span>
           <span class="tag">Docker</span>
-          <span class="tag">Kubernetes</span>
           <span class="tag">Linux</span>
           <span class="tag">Git</span>
+          <span class="tag">GitHub Actions CI/CD</span>
+          <span class="tag">SQL</span>
         </div>
       </div>
 
       <div class="resume-download anim-item">
-        <a href="#" class="btn btn-primary" data-i18n="resume.download">Download PDF</a>
+        <a href="assets/Yichi-infra.pdf" target="_blank" class="btn btn-primary" data-i18n="resume.download">Download PDF</a>
       </div>
     </div>
   </section>
@@ -239,9 +279,10 @@
     <div class="footer-inner">
       <div class="footer-links">
         <a href="https://github.com/Ccyest" target="_blank" rel="noopener">GitHub</a>
-        <a href="mailto:your@email.com">Email</a>
+        <a href="https://www.linkedin.com/in/yichi-zhang2003/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="mailto:easonzhang602@gmail.com">Email</a>
       </div>
-      <p class="footer-copy">&copy; 2024 Yichi Zhang</p>
+      <p class="footer-copy">&copy; 2025 Yichi Zhang</p>
     </div>
   </footer>
 
