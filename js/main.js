@@ -105,12 +105,12 @@ const posts = [
              zh: '优化 TTS 推理：SGLang Omni 中从性能分析到流式传输的工程实践' },
     desc:  { en: 'A deep dive into optimizing the Higgs TTS pipeline — CUDA Graph migration, LRU caching for reference audio, and async GPU-CPU decode patterns for significant latency and throughput gains.',
              zh: '深入优化 Higgs TTS 流水线——CUDA Graph 迁移、参考音频 LRU 缓存、异步 GPU-CPU 解码模式，实现显著的延迟降低与吞吐提升。' },
-    url: 'https://medium.com/@yichizhang602/optimizing-tts-inference-engineering-lessons-from-profiling-to-streaming-in-sglang-omni-00d06e3fc78d',
+    url: 'blog/tts-optimization.html',
     tags: ['SGLang', 'TTS', 'Optimization']
   },
   {
     type: 'video',
-    date: '2025-03-15',
+    date: '2026-02-18',
     title: { en: 'SGLang Cookbook Full Tutorial: Your One-Click Model Deployment Guide',
              zh: 'SGLang Cookbook 完整教程：一键模型部署指南' },
     desc:  { en: 'A comprehensive walkthrough of SGLang runtime configuration, server deployment, and inference pipeline setup for production workloads.',
@@ -120,7 +120,7 @@ const posts = [
   },
   {
     type: 'video',
-    date: '2025-02-20',
+    date: '2025-12-11',
     title: { en: 'SGLang Diffusion: Open-Source High-Performance Inference for Image & Video Generation',
              zh: 'SGLang Diffusion：开源高性能图像与视频生成推理' },
     desc:  { en: 'Exploring SGLang\'s diffusion model serving capabilities for high-performance image and video generation inference.',
@@ -208,7 +208,9 @@ function renderBlog() {
       return '<span class="bc-tag">' + t + '</span>';
     }).join('');
 
-    return '<a href="' + p.url + '" class="blog-card anim-item visible" target="_blank" rel="noopener">'
+    var isExternal = p.url.startsWith('http');
+    var linkAttrs = isExternal ? ' target="_blank" rel="noopener"' : '';
+    return '<a href="' + p.url + '" class="blog-card anim-item visible"' + linkAttrs + '>'
       + '<div class="bc-top">'
       + '<span class="bc-type' + typeClass + '">' + typeLabel + '</span>'
       + '<span class="bc-date">' + p.date + '</span>'
