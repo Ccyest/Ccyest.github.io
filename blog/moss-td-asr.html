@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimizing ASR for 90-Minute Multi-Speaker Audio – Yichi Zhang</title>
+  <meta name="description" content="How MOSS-Transcribe-Diarize was optimized in SGLang-Omni to transcribe and diarize up to 90-minute multi-speaker audio — profiling, CUDA Graph, chunked prefill, async decode, and benchmarks.">
+  <meta property="og:title" content="Optimizing ASR Models to Transcribe 90-Minute Multi-Speaker Audio">
+  <meta property="og:description" content="Engineering behind bringing MOSS-TD to SGLang-Omni: profiling, chunked prefill, CUDA Graph, async decode, streaming, and benchmark results.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/blog-post.css">
+  <script>
+    (function(){
+      var t = localStorage.getItem('theme') || 'light';
+      var l = localStorage.getItem('lang') || 'en';
+      document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.setAttribute('data-lang', l);
+      document.documentElement.lang = l === 'zh' ? 'zh-CN' : 'en';
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">YZ</a>
+      <div class="nav-links" id="nav-links">
+        <a href="../index.html#blog" class="lang-en">Blog</a>
+        <a href="../index.html#blog" class="lang-zh">博客</a>
+        <a href="../index.html#research" class="lang-en">Research</a>
+        <a href="../index.html#research" class="lang-zh">研究</a>
+        <a href="../index.html#resume" class="lang-en">Resume</a>
+        <a href="../index.html#resume" class="lang-zh">简历</a>
+      </div>
+      <div class="nav-controls">
+        <button class="ctrl-btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="ctrl-btn lang-btn" id="lang-toggle">EN</button>
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Post Header -->
+  <header class="post-header">
+    <a href="../index.html#blog" class="post-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span class="lang-en">Back to Blog</span>
+      <span class="lang-zh">返回博客</span>
+    </a>
+    <div class="post-meta">
+      <span class="post-date lang-en">July 19, 2026</span>
+      <span class="post-date lang-zh">2026年7月19日</span>
+      <span class="post-tag">SGLang</span>
+      <span class="post-tag">ASR</span>
+      <span class="post-tag lang-en">Optimization</span>
+      <span class="post-tag lang-zh">优化</span>
+    </div>
+    <h1 class="post-title lang-en">Optimizing ASR Models to Transcribe 90-Minute Multi-Speaker Audio</h1>
+    <h1 class="post-title lang-zh">优化 ASR 模型：转写 90 分钟多说话人音频</h1>
+    <p class="post-subtitle lang-en">Bringing MOSS-Transcribe-Diarize to SGLang-Omni — the engineering behind transcribing and diarizing up to 90-minute multi-speaker audio: profiling, chunked prefill, CUDA Graph, async decode, and benchmarks.</p>
+    <p class="post-subtitle lang-zh">将 MOSS-Transcribe-Diarize 引入 SGLang-Omni——转写并区分长达 90 分钟多说话人音频背后的工程实践：性能分析、分块预填充、CUDA Graph、异步解码与基准测试。</p>
+    <div class="post-reference lang-en">
+      This article is also available as a tutorial in the <a href="https://github.com/Ccyest/Awesome-ML-SYS-Tutorial/blob/ecb2cb4e76cd172fa5ad33c8c80fcada71cf86de/sglang/sglang-omni/moss-td-asr.md" target="_blank" rel="noopener">Awesome-ML-SYS-Tutorial</a> repository.
+    </div>
+    <div class="post-reference lang-zh">
+      本文同时收录于 <a href="https://github.com/Ccyest/Awesome-ML-SYS-Tutorial/blob/ecb2cb4e76cd172fa5ad33c8c80fcada71cf86de/sglang/sglang-omni/moss-td-asr.md" target="_blank" rel="noopener">Awesome-ML-SYS-Tutorial</a> 仓库，作为教程参考。
+    </div>
+  </header>
+
+  <!-- ============================================================
+       ENGLISH ARTICLE
+       ============================================================ -->
+  <article class="post-body lang-en">
+
+    <p><a href="https://huggingface.co/OpenMOSS-Team/MOSS-Transcribe-Diarize" target="_blank" rel="noopener">MOSS-Transcribe-Diarize</a> (MOSS-TD for short) does more than speech-to-text: it labels who spoke and when in complex conversation scenarios, on audio up to ~90 minutes long.</p>
+
+    <p>The community recently collaborated to bring MOSS-TD to <a href="https://github.com/sgl-project/sglang-omni" target="_blank" rel="noopener">SGLang-Omni</a>, covering model support, correctness fixes, and performance optimization. The result: a single H100 turns a 38-minute multi-speaker meeting into a speaker-labeled, timestamped transcript in ~49 seconds — the whole meeting is transcribed faster than you could listen to its first minute. Batch 16 meetings at once, and the same GPU chews through 97.5 seconds of audio per wall-clock second. This post records all the engineering behind these numbers, and our technical experiences.</p>
+
+    <h2>ASR Model Primer</h2>
+
+    <p>ASR (Automatic Speech Recognition) converts audio input into text output: <strong>input is audio waveform, output is text.</strong></p>
+
+    <p>MOSS-TD follows the Audio LLM paradigm — a Whisper encoder produces continuous embeddings, which are projected by an FFN adaptor into a decoder-only LLM that autoregressively generates the transcript with speaker labels and timestamps.</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-pipeline.svg" alt="MOSS-TD ASR Inference Pipeline" loading="lazy">
+      <figcaption>Figure 1. MOSS-TD inference pipeline: Whisper encoder → FFN adaptor → Qwen3 LLM prefill → AR decode → text with speaker labels and timestamps.</figcaption>
+    </figure>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-data-shapes.svg" alt="What the Data Looks Like at Each Stage" loading="lazy">
+      <figcaption>Figure 2. Data shapes along the pipeline: 16 kHz waveform → log-mel spectrogram <code>[T, 80]</code> → encoder hidden states <code>[T, 1024]</code> → LLM embeddings <code>[T/4, 1024]</code> (12.5 tokens/s, ~67k tokens for 90 min) → diarized text.</figcaption>
+    </figure>
+
+    <p>The pipeline has three stages:</p>
+
+    <ol>
+      <li><strong>Encoder.</strong> Waveform → log-mel spectrogram (80 bins) → 24-layer Whisper Transformer → 4× Time Merge (concatenate every 4 frames) → FFN adaptor (Linear→SiLU→Linear→LayerNorm, 4096→1024). The output is a sequence of continuous float vectors in the LLM's embedding space.</li>
+      <li><strong>LLM Prefill.</strong> The audio embeddings replace placeholder tokens in the prompt. Qwen3 processes the prompt to build the KV cache — in one forward pass for short audio, or split into 4096-token chunks for long audio (see Chunked Prefill below).</li>
+      <li><strong>AR Decode.</strong> Qwen3 generates text tokens one at a time — transcript with speaker labels <code>[S01]</code>/<code>[S02]</code> and timestamps — until EOS.</li>
+    </ol>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Spec</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Architecture</td><td><code>MossTranscribeDiarizeForConditionalGeneration</code></td></tr>
+          <tr><td>Audio Encoder</td><td>Whisper encoder (24 layers, d_model=1024)</td></tr>
+          <tr><td>Adapter</td><td>FFN: Linear→SiLU→Linear→LayerNorm, 4096→1024</td></tr>
+          <tr><td>Text Decoder</td><td>Qwen3 (28 layers, hidden=1024, GQA 16/8)</td></tr>
+          <tr><td>Output</td><td>Speaker-labeled transcript with start/end timestamps</td></tr>
+          <tr><td>Endpoint</td><td><code>/v1/audio/transcriptions</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Chunked Prefill for Long Audio</h3>
+
+    <p>For long audio (up to ~90 minutes), the encoded token sequence can reach tens of thousands of tokens. Prefilling such a sequence in one forward pass would occupy the GPU for seconds and spike activation memory. And since decode and prefill share one scheduler loop, every other request's decode would stall for that whole stretch. <strong>Chunked Prefill</strong> splits the sequence into 4096-token chunks, processing one per scheduling step and interleaving decode steps for other requests between chunks. The trade-off: the long request's own prefill finishes slightly later (more scheduling rounds), in exchange for bounded decode stalls and smooth streaming for everyone else. Stream output is suppressed during chunked prefill to avoid emitting intermediate states as if they were transcript output.</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-chunked-prefill.svg" alt="Chunked Prefill for Long Audio" loading="lazy">
+      <figcaption>Figure 3. Chunked prefill splits a long token sequence into 4096-token chunks, interleaving other requests' decode steps between chunks to keep the GPU busy.</figcaption>
+    </figure>
+
+    <h3>ASR vs TTS</h3>
+
+    <p>ASR and TTS share much of the same serving infrastructure in SGLang-Omni — both use <code>OmniScheduler</code>, share CUDA Graph / KV cache management / continuous batching, and both are LLM-backboned autoregressive models (the backbone choice varies by model; MOSS-TD and MOSS-TTS happen to both use Qwen3). The real differences lie in what they encode, what they generate, and how their pipelines are organized:</p>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Dimension</th><th>ASR (MOSS-TD)</th><th>TTS (Higgs / MOSS-TTS)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Audio representation</td><td>Continuous features (mel → encoder hidden states)</td><td>Discrete codec tokens (RVQ multi-codebook)</td></tr>
+          <tr><td>Data flow</td><td>Audio → text</td><td>Text → audio</td></tr>
+          <tr><td>Audio decoder / Vocoder</td><td>Not needed — output is plain text</td><td>Vocoder required to reconstruct waveform</td></tr>
+          <tr><td>Typical input length</td><td>Very long (MOSS-TD supports ~90 min)</td><td>Short (reference voice: a few seconds)</td></tr>
+          <tr><td>Pipeline stages</td><td>Single stage (encoder + LLM)</td><td>Multi-stage (encoder → AR engine → vocoder)</td></tr>
+          <tr><td>Streaming</td><td>Stream text output (incremental transcript)</td><td>Stream audio output + streaming vocoder</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-asr-vs-tts.svg" alt="ASR vs TTS Architecture Comparison" loading="lazy">
+      <figcaption>Figure 4. ASR vs TTS architecture. ASR: Whisper encoder → FFN adaptor → Qwen3 decoder, which generates text directly. TTS (MOSS-TTS-Local-v1.5): codec encoder → Qwen3-4B backbone → local transformer → vocoder.</figcaption>
+    </figure>
+
+    <p>ASR does not need a vocoder at all — it simply generates text. But ASR inputs can be much longer than TTS inputs, shifting the optimization focus toward the AR decode loop and long-sequence memory management. For the full TTS optimization story, see <a href="tts-optimization.html">Optimizing TTS Inference</a>.</p>
+
+    <h2>Where Time Is Spent: Profiling</h2>
+
+    <p>Before optimizing, we profiled on a single H100 (CUDA Graph, bf16) to find the bottlenecks:</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-profiling.svg" alt="MOSS-TD Profiling Breakdown" loading="lazy">
+      <figcaption>Figure 5. Inference time breakdown by stage. AR Decode dominates at low concurrency; encoder share rises at high concurrency with short audio.</figcaption>
+    </figure>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Audio Length</th><th>Concurrency</th><th>Encoder</th><th>LLM Prefill</th><th>AR Decode</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5 s</td><td>1</td><td>8.9%</td><td>14.7%</td><td>76.4%</td></tr>
+          <tr><td>5 s</td><td>4</td><td>20.0%</td><td>22.3%</td><td>57.7%</td></tr>
+          <tr><td>5 s</td><td>16</td><td>38.2%</td><td>29.7%</td><td>32.1%</td></tr>
+          <tr><td>60 s</td><td>1</td><td>4.0%</td><td>2.1%</td><td>94.0%</td></tr>
+          <tr><td>60 s</td><td>4</td><td>5.0%</td><td>4.6%</td><td>90.4%</td></tr>
+          <tr><td>60 s</td><td>16</td><td>13.7%</td><td>9.5%</td><td>76.8%</td></tr>
+          <tr><td>20 min</td><td>1</td><td>4.7%</td><td>0.8%</td><td>94.5%</td></tr>
+          <tr><td>20 min</td><td>4</td><td>9.2%</td><td>1.9%</td><td>88.9%</td></tr>
+          <tr><td>20 min</td><td>16</td><td>11.6%</td><td>2.6%</td><td>85.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Two takeaways:</p>
+
+    <ul>
+      <li>At c=1 with long audio, AR Decode takes 94%+ of total time — the leverage is almost entirely in the decode loop.</li>
+      <li>At c=16 with short audio, encoder + prefill together account for 68%, making encoder-side optimizations worthwhile.</li>
+    </ul>
+
+    <h2>Optimization Strategies</h2>
+
+    <p>Our optimization stack reuses the core infrastructure built for TTS, with ASR-specific adaptations. If you have read <a href="tts-optimization.html">the TTS optimization blog</a>, you will recognize the same ideas — CUDA Graph, async decode, encoder caching — applied to a simpler pipeline (no vocoder, no multi-codebook generation).</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-opt-overview.svg" alt="MOSS-TD Optimization Strategies" loading="lazy">
+      <figcaption>Figure 6. Optimization strategies mapped to pipeline stages. Encoder gets CUDA Graph + Torch Compile + LRU cache; decode gets CUDA Graph + async decode + stream output.</figcaption>
+    </figure>
+
+    <h3>Encoder</h3>
+
+    <p><strong>CUDA Graph.</strong> The Whisper encoder works on fixed 30-second windows: input audio is split into 30 s chunks (the last one padded to 30 s), and each chunk goes through one encoder forward. Since every chunk has the same shape, the only variable is how many chunks a request carries — so the encoder is bucketed by chunk count (default up to 8 chunks, covering ~4 min of audio), and each bucket captures a CUDA graph, eliminating per-call kernel launch overhead.</p>
+
+    <p><strong>Torch Compile</strong> (opt-in). An opt-in setting replaces the encoder CUDA graph with <code>torch.compile(self.whisper_encoder, dynamic=False)</code>, which adds kernel fusion. The default compile mode is used on purpose: <code>mode="reduce-overhead"</code> owns its own internal CUDA graphs, and they corrupt memory when they run alongside the decode CUDA graphs in the same process. Torch Compile trades slower cold start (one-time per-bucket compilation) for kernel fusion gains at steady state. Prefer it for encoder-bound, high-concurrency short-audio workloads.</p>
+
+    <p><strong>LRU Cache.</strong> The Whisper encoder forward is deterministic for identical input — same waveform always produces the same embeddings. We cache encoder outputs on CPU (max 64 entries, 4 GB), keyed by a content hash of the input waveform. On a hit, the stored tensor is transferred back to GPU asynchronously and the encoder is skipped entirely.</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-encoder-cache.svg" alt="Encoder LRU Cache Flow" loading="lazy">
+      <figcaption>Figure 7. LRU cache flow: content-hash the waveform, check the cache. On a hit, skip the encoder entirely and transfer cached embeddings back to GPU. On a miss, run the encoder and store the result.</figcaption>
+    </figure>
+
+    <p>Unlike TTS where the same reference voice is reused across many prompts (high hit rate), ASR inputs are typically unique in production. The cache is most useful during request retries, A/B testing with different decode parameters, and development iteration. Being honest about limited hit rate in production is more useful than pretending the cache always helps.</p>
+
+    <h3>AR Decode</h3>
+
+    <p><strong>CUDA Graph.</strong> The LLM decode step pads batch size to predefined buckets (1, 2, 4, 8, ...) and replays a captured CUDA graph, eliminating kernel launch overhead on every token. The mechanism is the same as for TTS decode — see <a href="tts-optimization.html">CUDA Graph in the TTS blog</a> for the full discussion of static-path challenges, fixed-address shadow buffers, and gather/scatter patterns.</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-cuda-graph.svg" alt="Eager vs CUDA Graph" loading="lazy">
+      <figcaption>Figure 8. Eager mode dispatches each kernel individually with CPU gaps in between; CUDA Graph records the sequence once and replays it as a single GPU operation.</figcaption>
+    </figure>
+
+    <p><strong>Async Decode.</strong> Same one-step lookahead as TTS: launch the current decode step's GPU work, then resolve the previous step's host-side work (D2H copy, finish detection, result dispatch) in parallel. Falls back to synchronous mode at batch size 1, where the host-side work is too small to justify the overlap. Two alternating pinned host buffers prevent read/write races between the GPU's async D2H write and the CPU's read.</p>
+
+    <p>This brings a solid qps gain at high concurrency. The work also fixed a KV slot leak caused by lookahead overrun. For the full mechanism — launch/resolve event loop, ping-pong buffers, lookahead guard — see <a href="tts-optimization.html">Asynchronous Decode + Lookahead in the TTS blog</a>.</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-async-decode.svg" alt="Synchronous vs Asynchronous Decode" loading="lazy">
+      <figcaption>Figure 9. Synchronous decode wastes GPU cycles waiting for CPU resolve. Async decode overlaps GPU forward N with CPU resolve N-1 via ping-pong pinned buffers, hiding the CPU work entirely.</figcaption>
+    </figure>
+
+    <p><strong>Stream Output.</strong> During AR decode, transcript text is emitted incrementally via SSE so that users see partial results as they are generated rather than waiting for the full sequence. Three mechanisms control when to emit:</p>
+
+    <ol>
+      <li><strong>Rate limiting</strong> (default 50 ms): tokens accumulate in a per-request buffer and flush only when enough time has elapsed. The first token goes out immediately; EOS always triggers a flush.</li>
+      <li><strong>Chunked prefill suppression</strong>: all emission is suppressed during chunked prefill to prevent intermediate states from being misinterpreted as transcript.</li>
+      <li><strong>Incomplete UTF-8 handling</strong>: if the accumulated tokens end with the Unicode replacement character (an incomplete multi-byte sequence split across token boundaries), emission is held until the next token completes the sequence.</li>
+    </ol>
+
+    <h3>Batched Inference</h3>
+
+    <p>Encoder-side mel alignment and LLM-side sequence packing allow multiple requests to be processed together more efficiently. On the encoder side, mel spectrograms of different lengths are aligned for batched Whisper forward passes. On the LLM side, multiple requests' token sequences are packed into the same batch for prefill and decode, making better use of GPU compute under concurrency.</p>
+
+    <h2>Benchmark Results</h2>
+
+    <p>We benchmark MOSS-TD on two private multi-speaker datasets that bracket the input-length spectrum:</p>
+
+    <ul>
+      <li><strong>Movies</strong> (<code>movies800times</code>): short-sequence dataset, 800 dialog clips (~12 s each).</li>
+      <li><strong>AISHELL-4 Long</strong> (<code>aishell4_long</code>): long-sequence dataset, 20 long-form meeting recordings (~38 min each).</li>
+    </ul>
+
+    <p>Both datasets are currently under private license — contact the MOSS team for access.</p>
+
+    <p>Key metrics: <strong>RTF</strong> (Real-Time Factor) is processing time divided by input audio duration — <code>&lt;1</code> means faster than real time. <strong>audio_s/s</strong> is total audio seconds processed per wall-clock second, which measures how much batching delivers real throughput gains.</p>
+
+    <p><strong>Environment:</strong> 1× H100 80GB, colocate single-GPU. MOSS-Transcribe-Diarize, bf16, CUDA Graph, greedy decoding. Server pinned at <code>max_running_requests = cuda_graph_max_bs = 16</code>, <code>mem_fraction_static = 0.80</code>. Movies speed points are the mean of 3 runs; AISHELL-4 Long is a single run per point (each request is a ~38 min meeting). Accuracy is measured once at c=16 (concurrency-independent under greedy decoding).</p>
+
+    <h3>Movies — short multi-speaker dialog (N=800)</h3>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>Throughput (req/s)</th><th>RTF mean</th><th>audio_s/s</th><th>Latency mean (s)</th><th>Latency p95 (s)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>4.55</td><td>0.022</td><td>52.7</td><td>0.219</td><td>0.500</td></tr>
+          <tr><td>2</td><td>8.40</td><td>0.024</td><td>97.2</td><td>0.238</td><td>0.544</td></tr>
+          <tr><td>4</td><td>14.96</td><td>0.027</td><td>173.2</td><td>0.267</td><td>0.610</td></tr>
+          <tr><td>8</td><td>24.90</td><td>0.033</td><td>288.1</td><td>0.321</td><td>0.714</td></tr>
+          <tr><td>16</td><td>32.79</td><td>0.043</td><td>379.5</td><td>0.422</td><td>0.935</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>From c=1 to c=16, throughput and audio_s/s both scale <strong>~7.2×</strong> (4.6 → 32.8 req/s; 53 → 379 audio_s/s) while RTF stays far below 1 (0.022 → 0.043, i.e. <strong>~23–45× faster than real time</strong>) and mean latency stays sub-second. Short-audio ASR becomes encoder- and prefill-bound as batches fill, so per-request RTF drifts up, but aggregate throughput keeps climbing.</p>
+
+    <h3>AISHELL-4 Long — long-form meetings (N=20, ~38 min each)</h3>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>Throughput (req/s)</th><th>RTF mean</th><th>audio_s/s</th><th>Latency mean (s)</th><th>Latency p95 (s)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>0.021</td><td>0.021</td><td>47.0</td><td>48.7</td><td>71.1</td></tr>
+          <tr><td>2</td><td>0.030</td><td>0.028</td><td>69.7</td><td>64.9</td><td>78.5</td></tr>
+          <tr><td>4</td><td>0.034</td><td>0.048</td><td>77.7</td><td>110.2</td><td>142.7</td></tr>
+          <tr><td>8</td><td>0.037</td><td>0.081</td><td>85.4</td><td>184.8</td><td>239.2</td></tr>
+          <tr><td>16</td><td>0.043</td><td>0.127</td><td>97.5</td><td>291.0</td><td>374.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Each request is a ~38 min meeting dominated by the AR decode loop, so req/s is low by design and <strong>RTF is the meaningful speed metric</strong>. A single stream already transcribes a 38 min meeting in <strong>~49 s</strong> (RTF 0.021, ~47× faster than real time). Pushing concurrency to 16 <strong>more than doubles</strong> aggregate audio_s/s (47 → 97.5) and req/s (0.021 → 0.043); per-request latency and RTF grow with batch contention but stay ~8× faster than real time (RTF 0.127). This is the long-audio batching trade-off: aggregate throughput up, single-request latency up.</p>
+
+    <h3>Accuracy</h3>
+
+    <p>Measured at c=16 with greedy decoding. <strong>CER</strong> is character error rate; <strong>cpCER</strong> is concatenated-minimum-permutation CER (speaker-attributed); <strong>Δ CER</strong> is the cpCER − CER gap attributable to speaker assignment; <strong>DER</strong> is the speaker-timestamp diarization error rate.</p>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Dataset</th><th>Samples</th><th>CER (%)</th><th>cpCER (%)</th><th>Δ CER (%)</th><th>Speaker-timestamp DER (%)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Movies</td><td>800</td><td>5.92</td><td>13.12</td><td>7.20</td><td>21.20</td></tr>
+          <tr><td>AISHELL-4 Long</td><td>20</td><td>13.76</td><td>15.07</td><td>1.31</td><td>10.25</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Reproducing the Benchmarks</h3>
+
+    <p>The <a href="https://github.com/sgl-project/sglang-omni/blob/main/benchmarks/eval/benchmark_asr_transcribe_diarize.py" target="_blank" rel="noopener"><code>benchmark_asr_transcribe_diarize</code></a> driver runs the whole pipeline — it launches a single-GPU server, sends the dataset, and writes speed metrics to <code>&lt;output-dir&gt;/transcribe_diarize_speed_results.json</code>:</p>
+
+    <pre><code>python -m benchmarks.eval.benchmark_asr_transcribe_diarize \
+  --dataset movies800times --max-concurrency 16 \
+  --mem-fraction-static 0.80 \
+  --output-dir results/moss_transcribe_diarize_movies800times
+
+python -m benchmarks.eval.benchmark_asr_transcribe_diarize \
+  --dataset aishell4_long --max-concurrency 16 \
+  --mem-fraction-static 0.80 \
+  --output-dir results/moss_transcribe_diarize_aishell4_long</code></pre>
+
+    <p>The tables above sweep client concurrency ∈ {1, 2, 4, 8, 16} against one warm server pinned at <code>max_running_requests = cuda_graph_max_bs = 16</code>, isolating the effect of batching.</p>
+
+    <h2>Model Usage</h2>
+
+    <p>See the <a href="https://sgl-project.github.io/sglang-omni/cookbook/moss_transcribe_diarize.html" target="_blank" rel="noopener">MOSS-TD cookbook</a> for deployment and usage instructions.</p>
+
+    <h2>What's Next</h2>
+
+    <p>Several optimization efforts are still in progress:</p>
+
+    <ul>
+      <li><strong>Streaming audio input</strong>: accept audio as it arrives and transcribe incrementally, instead of waiting for the full clip to upload</li>
+      <li><strong>Piecewise prefill CUDA Graph</strong>: capture chunked prefill as a CUDA graph</li>
+      <li><strong>Tensor parallelism</strong>: TP integration for multi-GPU deployment, targeting the potential demand for very long audio files — their KV cache can outgrow a single GPU's memory</li>
+    </ul>
+
+    <h2>Acknowledgments</h2>
+
+    <p>Thanks for the joint effort of the OpenMOSS team and SGLang-Omni team.</p>
+
+    <p><strong>MOSS Team:</strong> Donghua Yu, Zhengyuan Lin, Hanfu Chen, Yiyang Zhang, Yang Gao, Zhaoye Fei, Qinyuan Cheng, Shimin Li, Xipeng Qiu.</p>
+
+    <p><strong>SGLang-Omni Team:</strong> Yijiang Tian, Xinli Jing, Xiangrui Ke, Zhihao Guo, Ruoqi Zhang, Lifan Shen, Jintao Qu, Xuxiang Tian, Kaige Li, Ratish P, Haoguang Cai, Zijie Xia, Chenchen Hong, Xuesong Ye, Jingwen Gu, Jiaxin Deng, Jiaxuan Luo, Xinyu Lu, Hao Jin, Chenyang Zhao, Yichi Zhang.</p>
+
+    <h2>Learn More</h2>
+
+    <ul>
+      <li><strong>Model:</strong> <a href="https://huggingface.co/OpenMOSS-Team/MOSS-Transcribe-Diarize" target="_blank" rel="noopener">OpenMOSS-Team/MOSS-Transcribe-Diarize</a></li>
+      <li><strong>Serving framework:</strong> <a href="https://github.com/sgl-project/sglang-omni" target="_blank" rel="noopener">SGLang-Omni on GitHub</a></li>
+      <li><strong>Cookbook:</strong> <a href="https://sgl-project.github.io/sglang-omni/cookbook/moss_transcribe_diarize.html" target="_blank" rel="noopener">MOSS-TD in SGLang-Omni</a></li>
+      <li><strong>ASR optimization roadmap:</strong> <a href="https://github.com/sgl-project/sglang-omni/issues/924" target="_blank" rel="noopener">tracking issue on GitHub</a></li>
+      <li><strong>TTS optimization blog:</strong> <a href="tts-optimization.html">Optimizing TTS Inference</a></li>
+      <li><strong>Encoder skew analysis:</strong> <a href="https://github.com/Ccyest/Awesome-ML-SYS-Tutorial/blob/ecb2cb4e76cd172fa5ad33c8c80fcada71cf86de/sglang/sglang-omni/moss-tts-local-batch-encoder-skew.md" target="_blank" rel="noopener">The Root Cause of RL Training-Serving Skew</a></li>
+    </ul>
+
+  </article>
+
+  <!-- ============================================================
+       CHINESE ARTICLE
+       ============================================================ -->
+  <article class="post-body lang-zh">
+
+    <p><a href="https://huggingface.co/OpenMOSS-Team/MOSS-Transcribe-Diarize" target="_blank" rel="noopener">MOSS-Transcribe-Diarize</a>（简称 MOSS-TD）做的不只是语音转文字：它能在复杂对话场景中标注出谁在何时说了什么，支持长达约 90 分钟的音频。</p>
+
+    <p>社区最近协作将 MOSS-TD 引入 <a href="https://github.com/sgl-project/sglang-omni" target="_blank" rel="noopener">SGLang-Omni</a>，涵盖模型支持、正确性修复与性能优化。成果是：单张 H100 能在约 49 秒内把一场 38 分钟的多说话人会议转写成带说话人标签和时间戳的文字稿——整场会议的转写速度比你听完第一分钟还要快。若一次批处理 16 场会议，同一张 GPU 每一秒墙钟时间可处理 97.5 秒的音频。本文记录了这些数字背后的全部工程实践与我们的技术经验。</p>
+
+    <h2>ASR 模型入门</h2>
+
+    <p>ASR（自动语音识别）将音频输入转换为文本输出：<strong>输入是音频波形，输出是文本。</strong></p>
+
+    <p>MOSS-TD 遵循 Audio LLM 范式——Whisper 编码器产生连续的嵌入向量，经由一个 FFN 适配器投影进一个 decoder-only LLM，再由 LLM 自回归地生成带说话人标签和时间戳的转写文本。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-pipeline.svg" alt="MOSS-TD ASR 推理流水线" loading="lazy">
+      <figcaption>图 1. MOSS-TD 推理流水线：Whisper 编码器 → FFN 适配器 → Qwen3 LLM 预填充 → AR 解码 → 带说话人标签和时间戳的文本。</figcaption>
+    </figure>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-data-shapes.svg" alt="各阶段的数据形态" loading="lazy">
+      <figcaption>图 2. 流水线各阶段的数据形态：16 kHz 波形 → 对数梅尔频谱 <code>[T, 80]</code> → 编码器隐藏状态 <code>[T, 1024]</code> → LLM 嵌入 <code>[T/4, 1024]</code>（12.5 tokens/s，90 分钟约 6.7 万 token）→ 带说话人区分的文本。</figcaption>
+    </figure>
+
+    <p>流水线分为三个阶段：</p>
+
+    <ol>
+      <li><strong>编码器。</strong> 波形 → 对数梅尔频谱（80 个频段）→ 24 层 Whisper Transformer → 4× 时间合并（每 4 帧拼接）→ FFN 适配器（Linear→SiLU→Linear→LayerNorm，4096→1024）。输出是位于 LLM 嵌入空间中的一串连续浮点向量。</li>
+      <li><strong>LLM 预填充。</strong> 音频嵌入替换掉 prompt 中的占位符 token。Qwen3 处理 prompt 构建 KV cache——短音频用一次前向完成，长音频则拆成 4096-token 的分块（见下文分块预填充）。</li>
+      <li><strong>AR 解码。</strong> Qwen3 逐个生成文本 token——带说话人标签 <code>[S01]</code>/<code>[S02]</code> 和时间戳的转写——直到 EOS。</li>
+    </ol>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>组件</th><th>规格</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>架构</td><td><code>MossTranscribeDiarizeForConditionalGeneration</code></td></tr>
+          <tr><td>音频编码器</td><td>Whisper 编码器（24 层，d_model=1024）</td></tr>
+          <tr><td>适配器</td><td>FFN：Linear→SiLU→Linear→LayerNorm，4096→1024</td></tr>
+          <tr><td>文本解码器</td><td>Qwen3（28 层，hidden=1024，GQA 16/8）</td></tr>
+          <tr><td>输出</td><td>带起止时间戳、标注说话人的转写文本</td></tr>
+          <tr><td>端点</td><td><code>/v1/audio/transcriptions</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>面向长音频的分块预填充</h3>
+
+    <p>对于长音频（最长约 90 分钟），编码后的 token 序列可达数万个 token。若用一次前向完成这样的预填充，会占用 GPU 数秒并使激活显存飙升。而且由于解码与预填充共用同一个调度器循环，其他所有请求的解码在这整段时间里都会停滞。<strong>分块预填充</strong>把序列切成 4096-token 的分块，每个调度步处理一块，并在块与块之间穿插其他请求的解码步。代价是：这个长请求自身的预填充会稍晚完成（需要更多调度轮次），换来的是有界的解码停顿以及对所有其他请求平滑的流式输出。在分块预填充期间会抑制流式输出，避免把中间状态当作转写结果发出去。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-chunked-prefill.svg" alt="面向长音频的分块预填充" loading="lazy">
+      <figcaption>图 3. 分块预填充把长 token 序列切成 4096-token 的分块，在块之间穿插其他请求的解码步，让 GPU 保持忙碌。</figcaption>
+    </figure>
+
+    <h3>ASR 与 TTS 的对比</h3>
+
+    <p>在 SGLang-Omni 中，ASR 与 TTS 共享大量相同的服务基础设施——两者都使用 <code>OmniScheduler</code>，共享 CUDA Graph / KV cache 管理 / 连续批处理，且都是以 LLM 为骨干的自回归模型（骨干的选择因模型而异；MOSS-TD 和 MOSS-TTS 恰好都用 Qwen3）。真正的差异在于它们各自编码什么、生成什么，以及流水线如何组织：</p>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>维度</th><th>ASR（MOSS-TD）</th><th>TTS（Higgs / MOSS-TTS）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>音频表示</td><td>连续特征（梅尔 → 编码器隐藏状态）</td><td>离散 codec token（RVQ 多码本）</td></tr>
+          <tr><td>数据流向</td><td>音频 → 文本</td><td>文本 → 音频</td></tr>
+          <tr><td>音频解码器 / 声码器</td><td>不需要——输出是纯文本</td><td>需要声码器来重建波形</td></tr>
+          <tr><td>典型输入长度</td><td>很长（MOSS-TD 支持约 90 分钟）</td><td>较短（参考音色：几秒）</td></tr>
+          <tr><td>流水线阶段</td><td>单阶段（编码器 + LLM）</td><td>多阶段（编码器 → AR 引擎 → 声码器）</td></tr>
+          <tr><td>流式</td><td>流式文本输出（增量转写）</td><td>流式音频输出 + 流式声码器</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-asr-vs-tts.svg" alt="ASR 与 TTS 架构对比" loading="lazy">
+      <figcaption>图 4. ASR 与 TTS 架构对比。ASR：Whisper 编码器 → FFN 适配器 → Qwen3 解码器，直接生成文本。TTS（MOSS-TTS-Local-v1.5）：codec 编码器 → Qwen3-4B 骨干 → 局部 transformer → 声码器。</figcaption>
+    </figure>
+
+    <p>ASR 完全不需要声码器——它只是生成文本。但 ASR 的输入可能比 TTS 长得多，这使优化重心转向 AR 解码循环和长序列显存管理。完整的 TTS 优化故事参见 <a href="tts-optimization.html">《优化 TTS 推理》</a>。</p>
+
+    <h2>时间都花在哪：性能分析</h2>
+
+    <p>在优化之前，我们在单张 H100 上（CUDA Graph，bf16）做性能分析以定位瓶颈：</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-profiling.svg" alt="MOSS-TD 性能分析拆解" loading="lazy">
+      <figcaption>图 5. 各阶段推理时间拆解。低并发时 AR 解码占主导；高并发短音频时编码器占比上升。</figcaption>
+    </figure>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>音频长度</th><th>并发</th><th>编码器</th><th>LLM 预填充</th><th>AR 解码</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5 s</td><td>1</td><td>8.9%</td><td>14.7%</td><td>76.4%</td></tr>
+          <tr><td>5 s</td><td>4</td><td>20.0%</td><td>22.3%</td><td>57.7%</td></tr>
+          <tr><td>5 s</td><td>16</td><td>38.2%</td><td>29.7%</td><td>32.1%</td></tr>
+          <tr><td>60 s</td><td>1</td><td>4.0%</td><td>2.1%</td><td>94.0%</td></tr>
+          <tr><td>60 s</td><td>4</td><td>5.0%</td><td>4.6%</td><td>90.4%</td></tr>
+          <tr><td>60 s</td><td>16</td><td>13.7%</td><td>9.5%</td><td>76.8%</td></tr>
+          <tr><td>20 min</td><td>1</td><td>4.7%</td><td>0.8%</td><td>94.5%</td></tr>
+          <tr><td>20 min</td><td>4</td><td>9.2%</td><td>1.9%</td><td>88.9%</td></tr>
+          <tr><td>20 min</td><td>16</td><td>11.6%</td><td>2.6%</td><td>85.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>两点结论：</p>
+
+    <ul>
+      <li>在 c=1 且长音频时，AR 解码占总时间 94%+——优化杠杆几乎全在解码循环里。</li>
+      <li>在 c=16 且短音频时，编码器 + 预填充合计占 68%，使得编码器侧的优化很有价值。</li>
+    </ul>
+
+    <h2>优化策略</h2>
+
+    <p>我们的优化栈复用了为 TTS 构建的核心基础设施，并做了 ASR 专属的适配。如果你读过 <a href="tts-optimization.html">TTS 优化博客</a>，会认出同样的思路——CUDA Graph、异步解码、编码器缓存——被应用在一个更简单的流水线上（没有声码器，也没有多码本生成）。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-opt-overview.svg" alt="MOSS-TD 优化策略" loading="lazy">
+      <figcaption>图 6. 映射到各流水线阶段的优化策略。编码器采用 CUDA Graph + Torch Compile + LRU 缓存；解码采用 CUDA Graph + 异步解码 + 流式输出。</figcaption>
+    </figure>
+
+    <h3>编码器</h3>
+
+    <p><strong>CUDA Graph。</strong> Whisper 编码器在固定的 30 秒窗口上工作：输入音频被切成 30 s 的分块（最后一块补齐到 30 s），每一块过一次编码器前向。由于每个分块形状相同，唯一的变量是一个请求携带多少块——因此编码器按块数分桶（默认最多 8 块，覆盖约 4 分钟音频），每个桶捕获一张 CUDA graph，消除每次调用的 kernel 启动开销。</p>
+
+    <p><strong>Torch Compile</strong>（可选开启）。一个可选设置会用 <code>torch.compile(self.whisper_encoder, dynamic=False)</code> 替换编码器的 CUDA graph，额外带来 kernel 融合。这里刻意使用默认的 compile 模式：<code>mode="reduce-overhead"</code> 会自带内部的 CUDA graph，而它们与解码用的 CUDA graph 在同一进程中共存时会破坏显存。Torch Compile 用更慢的冷启动（每个桶一次性编译）换取稳态下的 kernel 融合收益。适合编码器受限、高并发短音频的负载。</p>
+
+    <p><strong>LRU 缓存。</strong> Whisper 编码器前向对相同输入是确定性的——相同波形总会产生相同嵌入。我们把编码器输出缓存在 CPU 上（最多 64 条，4 GB），以输入波形的内容哈希为键。命中时，存储的张量被异步传回 GPU，编码器被完全跳过。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-encoder-cache.svg" alt="编码器 LRU 缓存流程" loading="lazy">
+      <figcaption>图 7. LRU 缓存流程：对波形做内容哈希，查缓存。命中则完全跳过编码器，把缓存的嵌入传回 GPU；未命中则运行编码器并存储结果。</figcaption>
+    </figure>
+
+    <p>不同于 TTS 中同一段参考音色会被许多 prompt 复用（命中率高），ASR 的输入在生产中通常是唯一的。该缓存最有用的场景是请求重试、用不同解码参数做 A/B 测试，以及开发迭代。诚实地说明它在生产中命中率有限，比假装缓存总能帮上忙更有价值。</p>
+
+    <h3>AR 解码</h3>
+
+    <p><strong>CUDA Graph。</strong> LLM 解码步把批大小补齐到预定义的桶（1、2、4、8……）并重放已捕获的 CUDA graph，消除每个 token 上的 kernel 启动开销。机制与 TTS 解码相同——静态路径的挑战、固定地址的影子缓冲区、gather/scatter 模式的完整讨论，参见 <a href="tts-optimization.html">TTS 博客中的 CUDA Graph 部分</a>。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-cuda-graph.svg" alt="Eager 与 CUDA Graph 对比" loading="lazy">
+      <figcaption>图 8. Eager 模式逐个派发 kernel，中间夹着 CPU 空隙；CUDA Graph 把整个序列录制一次，作为单个 GPU 操作重放。</figcaption>
+    </figure>
+
+    <p><strong>异步解码。</strong> 与 TTS 相同的单步前瞻（lookahead）：先发起当前解码步的 GPU 工作，再并行地处理上一步的主机侧工作（D2H 拷贝、结束检测、结果派发）。在批大小为 1 时回退到同步模式，因为此时主机侧工作太小，不值得做重叠。两个交替使用的 pinned 主机缓冲区避免了 GPU 的异步 D2H 写与 CPU 读之间的读写竞争。</p>
+
+    <p>这在高并发下带来了扎实的 qps 提升。这项工作还修复了一个由前瞻越界导致的 KV slot 泄漏。完整机制——launch/resolve 事件循环、乒乓缓冲、前瞻守卫——参见 <a href="tts-optimization.html">TTS 博客中的异步解码 + 前瞻部分</a>。</p>
+
+    <figure class="post-img">
+      <img src="../assets/blog/moss-td-async-decode.svg" alt="同步与异步解码对比" loading="lazy">
+      <figcaption>图 9. 同步解码在等待 CPU resolve 时浪费 GPU 周期。异步解码通过乒乓 pinned 缓冲区让 GPU 前向 N 与 CPU resolve N-1 重叠，把 CPU 工作完全隐藏。</figcaption>
+    </figure>
+
+    <p><strong>流式输出。</strong> 在 AR 解码期间，转写文本通过 SSE 增量发出，让用户看到边生成边出现的部分结果，而不必等待整段序列。三个机制控制何时发出：</p>
+
+    <ol>
+      <li><strong>速率限制</strong>（默认 50 ms）：token 累积在每个请求的缓冲区中，只有经过足够时间才 flush。第一个 token 立即发出；EOS 总会触发一次 flush。</li>
+      <li><strong>分块预填充抑制</strong>：在分块预填充期间抑制一切发送，防止中间状态被误当作转写。</li>
+      <li><strong>不完整 UTF-8 处理</strong>：如果累积的 token 以 Unicode 替换字符结尾（一个跨 token 边界被切开的、不完整的多字节序列），则暂缓发送，直到下一个 token 补全该序列。</li>
+    </ol>
+
+    <h3>批处理推理</h3>
+
+    <p>编码器侧的梅尔对齐与 LLM 侧的序列打包让多个请求能更高效地一起处理。在编码器侧，不同长度的梅尔频谱被对齐以做批量 Whisper 前向。在 LLM 侧，多个请求的 token 序列被打包进同一个 batch 做预填充与解码，在并发下更充分地利用 GPU 算力。</p>
+
+    <h2>基准测试结果</h2>
+
+    <p>我们在两个私有多说话人数据集上对 MOSS-TD 做基准测试，它们分别处于输入长度谱的两端：</p>
+
+    <ul>
+      <li><strong>Movies</strong>（<code>movies800times</code>）：短序列数据集，800 段对话片段（每段约 12 s）。</li>
+      <li><strong>AISHELL-4 Long</strong>（<code>aishell4_long</code>）：长序列数据集，20 段长会议录音（每段约 38 min）。</li>
+    </ul>
+
+    <p>两个数据集目前均为私有许可——如需获取请联系 MOSS 团队。</p>
+
+    <p>关键指标：<strong>RTF</strong>（实时率）是处理时间除以输入音频时长——<code>&lt;1</code> 表示比实时更快。<strong>audio_s/s</strong> 是每一秒墙钟时间处理的音频总秒数，用来衡量批处理带来的真实吞吐增益。</p>
+
+    <p><strong>环境：</strong> 1× H100 80GB，单卡 colocate。MOSS-Transcribe-Diarize，bf16，CUDA Graph，贪心解码。服务端固定为 <code>max_running_requests = cuda_graph_max_bs = 16</code>，<code>mem_fraction_static = 0.80</code>。Movies 的速度点取 3 次运行的均值；AISHELL-4 Long 每个点单次运行（每个请求都是约 38 min 的会议）。精度在 c=16 下测一次（贪心解码下与并发无关）。</p>
+
+    <h3>Movies——短多说话人对话（N=800）</h3>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>吞吐 (req/s)</th><th>RTF 均值</th><th>audio_s/s</th><th>延迟均值 (s)</th><th>延迟 p95 (s)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>4.55</td><td>0.022</td><td>52.7</td><td>0.219</td><td>0.500</td></tr>
+          <tr><td>2</td><td>8.40</td><td>0.024</td><td>97.2</td><td>0.238</td><td>0.544</td></tr>
+          <tr><td>4</td><td>14.96</td><td>0.027</td><td>173.2</td><td>0.267</td><td>0.610</td></tr>
+          <tr><td>8</td><td>24.90</td><td>0.033</td><td>288.1</td><td>0.321</td><td>0.714</td></tr>
+          <tr><td>16</td><td>32.79</td><td>0.043</td><td>379.5</td><td>0.422</td><td>0.935</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>从 c=1 到 c=16，吞吐和 audio_s/s 都扩展了 <strong>约 7.2×</strong>（4.6 → 32.8 req/s；53 → 379 audio_s/s），同时 RTF 远低于 1（0.022 → 0.043，即<strong>比实时快约 23–45×</strong>），均值延迟保持在亚秒级。短音频 ASR 在 batch 填满时会变成编码器和预填充受限，因此单请求 RTF 略有上升，但总吞吐持续攀升。</p>
+
+    <h3>AISHELL-4 Long——长会议（N=20，每段约 38 min）</h3>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>吞吐 (req/s)</th><th>RTF 均值</th><th>audio_s/s</th><th>延迟均值 (s)</th><th>延迟 p95 (s)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>0.021</td><td>0.021</td><td>47.0</td><td>48.7</td><td>71.1</td></tr>
+          <tr><td>2</td><td>0.030</td><td>0.028</td><td>69.7</td><td>64.9</td><td>78.5</td></tr>
+          <tr><td>4</td><td>0.034</td><td>0.048</td><td>77.7</td><td>110.2</td><td>142.7</td></tr>
+          <tr><td>8</td><td>0.037</td><td>0.081</td><td>85.4</td><td>184.8</td><td>239.2</td></tr>
+          <tr><td>16</td><td>0.043</td><td>0.127</td><td>97.5</td><td>291.0</td><td>374.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>每个请求都是约 38 min 的会议，由 AR 解码循环主导，因此 req/s 天生就低，<strong>RTF 才是有意义的速度指标</strong>。单条流就已能在<strong>约 49 s</strong> 内转写一场 38 min 的会议（RTF 0.021，比实时快约 47×）。把并发推到 16 使总 audio_s/s（47 → 97.5）和 req/s（0.021 → 0.043）<strong>翻倍有余</strong>；单请求延迟和 RTF 随 batch 争用而增长，但仍比实时快约 8×（RTF 0.127）。这就是长音频批处理的权衡：总吞吐上升，单请求延迟上升。</p>
+
+    <h3>精度</h3>
+
+    <p>在 c=16、贪心解码下测量。<strong>CER</strong> 是字符错误率；<strong>cpCER</strong> 是拼接最小排列 CER（归属到说话人）；<strong>Δ CER</strong> 是可归因于说话人分配的 cpCER − CER 差距；<strong>DER</strong> 是说话人-时间戳的区分错误率。</p>
+
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>数据集</th><th>样本数</th><th>CER (%)</th><th>cpCER (%)</th><th>Δ CER (%)</th><th>说话人-时间戳 DER (%)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Movies</td><td>800</td><td>5.92</td><td>13.12</td><td>7.20</td><td>21.20</td></tr>
+          <tr><td>AISHELL-4 Long</td><td>20</td><td>13.76</td><td>15.07</td><td>1.31</td><td>10.25</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>复现基准测试</h3>
+
+    <p><a href="https://github.com/sgl-project/sglang-omni/blob/main/benchmarks/eval/benchmark_asr_transcribe_diarize.py" target="_blank" rel="noopener"><code>benchmark_asr_transcribe_diarize</code></a> 驱动脚本会跑通整个流水线——它启动一个单卡服务、发送数据集，并把速度指标写入 <code>&lt;output-dir&gt;/transcribe_diarize_speed_results.json</code>：</p>
+
+    <pre><code>python -m benchmarks.eval.benchmark_asr_transcribe_diarize \
+  --dataset movies800times --max-concurrency 16 \
+  --mem-fraction-static 0.80 \
+  --output-dir results/moss_transcribe_diarize_movies800times
+
+python -m benchmarks.eval.benchmark_asr_transcribe_diarize \
+  --dataset aishell4_long --max-concurrency 16 \
+  --mem-fraction-static 0.80 \
+  --output-dir results/moss_transcribe_diarize_aishell4_long</code></pre>
+
+    <p>上面的表格在一台预热好、固定为 <code>max_running_requests = cuda_graph_max_bs = 16</code> 的服务上扫描客户端并发 ∈ {1, 2, 4, 8, 16}，以隔离出批处理的效果。</p>
+
+    <h2>模型使用</h2>
+
+    <p>部署与使用说明参见 <a href="https://sgl-project.github.io/sglang-omni/cookbook/moss_transcribe_diarize.html" target="_blank" rel="noopener">MOSS-TD cookbook</a>。</p>
+
+    <h2>下一步</h2>
+
+    <p>还有若干优化工作正在进行中：</p>
+
+    <ul>
+      <li><strong>流式音频输入</strong>：在音频到达时就接收并增量转写，而不必等整段片段上传完成</li>
+      <li><strong>分段预填充 CUDA Graph</strong>：把分块预填充捕获为一张 CUDA graph</li>
+      <li><strong>张量并行</strong>：为多卡部署集成 TP，面向超长音频文件的潜在需求——它们的 KV cache 可能超出单卡显存</li>
+    </ul>
+
+    <h2>致谢</h2>
+
+    <p>感谢 OpenMOSS 团队与 SGLang-Omni 团队的共同努力。</p>
+
+    <p><strong>MOSS 团队：</strong> Donghua Yu, Zhengyuan Lin, Hanfu Chen, Yiyang Zhang, Yang Gao, Zhaoye Fei, Qinyuan Cheng, Shimin Li, Xipeng Qiu.</p>
+
+    <p><strong>SGLang-Omni 团队：</strong> Yijiang Tian, Xinli Jing, Xiangrui Ke, Zhihao Guo, Ruoqi Zhang, Lifan Shen, Jintao Qu, Xuxiang Tian, Kaige Li, Ratish P, Haoguang Cai, Zijie Xia, Chenchen Hong, Xuesong Ye, Jingwen Gu, Jiaxin Deng, Jiaxuan Luo, Xinyu Lu, Hao Jin, Chenyang Zhao, Yichi Zhang.</p>
+
+    <h2>了解更多</h2>
+
+    <ul>
+      <li><strong>模型：</strong> <a href="https://huggingface.co/OpenMOSS-Team/MOSS-Transcribe-Diarize" target="_blank" rel="noopener">OpenMOSS-Team/MOSS-Transcribe-Diarize</a></li>
+      <li><strong>服务框架：</strong> <a href="https://github.com/sgl-project/sglang-omni" target="_blank" rel="noopener">GitHub 上的 SGLang-Omni</a></li>
+      <li><strong>Cookbook：</strong> <a href="https://sgl-project.github.io/sglang-omni/cookbook/moss_transcribe_diarize.html" target="_blank" rel="noopener">SGLang-Omni 中的 MOSS-TD</a></li>
+      <li><strong>ASR 优化路线图：</strong> <a href="https://github.com/sgl-project/sglang-omni/issues/924" target="_blank" rel="noopener">GitHub 上的追踪 issue</a></li>
+      <li><strong>TTS 优化博客：</strong> <a href="tts-optimization.html">《优化 TTS 推理》</a></li>
+      <li><strong>编码器偏移分析：</strong> <a href="https://github.com/Ccyest/Awesome-ML-SYS-Tutorial/blob/ecb2cb4e76cd172fa5ad33c8c80fcada71cf86de/sglang/sglang-omni/moss-tts-local-batch-encoder-skew.md" target="_blank" rel="noopener">RL 训练-服务偏移的根因</a></li>
+    </ul>
+
+  </article>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="https://github.com/Ccyest" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/yichi-zhang2003/" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="mailto:easonzhang602@gmail.com">Email</a>
+      </div>
+      <p class="footer-copy">&copy; 2025 Yichi Zhang</p>
+    </div>
+  </footer>
+
+  <script>
+    // Language state
+    var currentLang = localStorage.getItem('lang') || 'en';
+    var langBtn = document.getElementById('lang-toggle');
+    langBtn.textContent = currentLang === 'en' ? 'EN' : '中';
+
+    langBtn.addEventListener('click', function () {
+      currentLang = currentLang === 'en' ? 'zh' : 'en';
+      document.documentElement.setAttribute('data-lang', currentLang);
+      document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+      localStorage.setItem('lang', currentLang);
+      langBtn.textContent = currentLang === 'en' ? 'EN' : '中';
+    });
+
+    // Theme toggle
+    var currentTheme = localStorage.getItem('theme') || 'light';
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+    });
+
+    // Nav scroll
+    var nav = document.getElementById('nav');
+    window.addEventListener('scroll', function () {
+      nav.classList.toggle('scrolled', window.scrollY > 10);
+    }, { passive: true });
+
+    // Hamburger
+    var navLinks = document.getElementById('nav-links');
+    var hamburger = document.getElementById('nav-hamburger');
+    hamburger.addEventListener('click', function () {
+      hamburger.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', function () {
+        hamburger.classList.remove('open');
+        navLinks.classList.remove('open');
+      });
+    });
+  </script>
+</body>
+</html>

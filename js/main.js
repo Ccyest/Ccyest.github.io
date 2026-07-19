@@ -55,10 +55,8 @@ const i18n = {
   'resume.skills.lang':    { en: 'Programming Languages',   zh: '编程语言' },
 
   'resume.oss1.date':  { en: 'April 2026 – Present',    zh: '2026年4月 – 至今' },
-  'resume.oss1.title': { en: 'SGLang-Omni — Core Contributor (Lead Higgs TTS Optimization)',
-                         zh: 'SGLang-Omni — 核心贡献者（主导 Higgs TTS 优化）' },
-  'resume.oss1.desc':  { en: 'Led the Higgs TTS inference-optimization workstream: designed optimization roadmap across encoder, AR-decode, and vocoder stages. Delivered +103% throughput, +107% audio-s/s, and −51% RTF on H200. Drove CUDA Graph capture for the autoregressive decode path.',
-                         zh: '主导 Higgs TTS 推理优化工作流：设计了编码器、AR 解码和声码器阶段的优化路线图。在 H200 上实现 +103% 吞吐量、+107% 音频秒/秒和 −51% RTF。推动了自回归解码路径的 CUDA Graph 捕获。' },
+  'resume.oss1.title': { en: 'SGLang-Omni — Core Contributor',
+                         zh: 'SGLang-Omni — 核心贡献者' },
   'resume.oss2.date':  { en: 'September 2025 – Present', zh: '2025年9月 – 至今' },
   'resume.oss2.title': { en: 'SGLang — OSS Contributor',
                          zh: 'SGLang — 开源贡献者' },
@@ -98,6 +96,16 @@ const i18n = {
    ======================================== */
 
 const posts = [
+  {
+    type: 'blog',
+    date: '2026-07-19',
+    title: { en: 'Optimizing ASR Models to Transcribe 90-Minute Multi-Speaker Audio',
+             zh: '优化 ASR 模型：转写 90 分钟多说话人音频' },
+    desc:  { en: 'Bringing MOSS-Transcribe-Diarize to SGLang-Omni — the engineering behind transcribing and diarizing up to 90-minute multi-speaker audio: profiling, chunked prefill, CUDA Graph, async decode, and benchmarks.',
+             zh: '将 MOSS-Transcribe-Diarize 引入 SGLang-Omni——转写并区分长达 90 分钟多说话人音频背后的工程实践：性能分析、分块预填充、CUDA Graph、异步解码与基准测试。' },
+    url: 'blog/moss-td-asr.html',
+    tags: ['SGLang', 'ASR', 'Optimization']
+  },
   {
     type: 'blog',
     date: '2026-06-05',

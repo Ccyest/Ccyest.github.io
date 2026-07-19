@@ -373,35 +373,71 @@
 
     <h3>Higgs TTS &mdash; Streaming (vanilla vs perf)</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-higgs-stream.png" alt="Higgs TTS Streaming Benchmark" loading="lazy">
-      <figcaption>Higgs TTS &mdash; Streaming Benchmark (vanilla vs perf)</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>qps vanilla</th><th>qps perf</th><th>Speedup</th><th>RTF van / perf</th><th>Latency mean (s) van / perf</th><th>TTFP (ms) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>1.286</td><td>2.908</td><td><strong>2.26&times;</strong></td><td>0.373 / 0.166</td><td>1.555 / 0.688</td><td>162 / 153</td></tr>
+          <tr><td>4</td><td>2.411</td><td>5.934</td><td><strong>2.46&times;</strong></td><td>0.393 / 0.163</td><td>1.658 / 0.673</td><td>166 / 109</td></tr>
+          <tr><td>8</td><td>4.313</td><td>9.856</td><td><strong>2.29&times;</strong></td><td>0.442 / 0.196</td><td>1.852 / 0.810</td><td>182 / 126</td></tr>
+          <tr><td>16</td><td>7.077</td><td>14.634</td><td><strong>2.07&times;</strong></td><td>0.533 / 0.261</td><td>2.247 / 1.088</td><td>214 / 176</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p>Optimizations deliver a stable <strong>~2.1&ndash;2.5&times;</strong> throughput gain across all concurrency levels, with RTF roughly halved and first-audio latency (TTFP) also reduced.</p>
 
     <h3>Higgs TTS &mdash; Non-streaming (vanilla vs perf)</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-higgs-nostream.png" alt="Higgs TTS Non-streaming Benchmark" loading="lazy">
-      <figcaption>Higgs TTS &mdash; Non-streaming Benchmark (vanilla vs perf)</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>qps vanilla</th><th>qps perf</th><th>Speedup</th><th>RTF van / perf</th><th>Latency mean (s) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>1.412</td><td>2.941</td><td><strong>2.08&times;</strong></td><td>0.342 / 0.164</td><td>1.416 / 0.680</td></tr>
+          <tr><td>4</td><td>2.552</td><td>5.715</td><td><strong>2.24&times;</strong></td><td>0.372 / 0.166</td><td>1.568 / 0.699</td></tr>
+          <tr><td>8</td><td>4.426</td><td>10.077</td><td><strong>2.28&times;</strong></td><td>0.423 / 0.191</td><td>1.771 / 0.793</td></tr>
+          <tr><td>16</td><td>8.156</td><td>15.174</td><td><strong>1.86&times;</strong></td><td>0.464 / 0.245</td><td>1.937 / 1.028</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3>MOSS-TTS-Local-v1.5 &mdash; Streaming (vanilla vs perf)</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-moss-stream.png" alt="MOSS TTS Streaming Benchmark" loading="lazy">
-      <figcaption>MOSS-TTS-Local-v1.5 &mdash; Streaming Benchmark (vanilla vs perf)</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>qps vanilla</th><th>qps perf</th><th>Speedup</th><th>RTF van / perf</th><th>Latency mean (s) van / perf</th><th>TTFP (ms) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>0.817</td><td>2.256</td><td><strong>2.76&times;</strong></td><td>0.561 / 0.206</td><td>2.448 / 0.888</td><td>257 / 261</td></tr>
+          <tr><td>4</td><td>1.444</td><td>2.649</td><td><strong>1.83&times;</strong></td><td>0.635 / 0.356</td><td>2.768 / 1.509</td><td>280 / 726</td></tr>
+          <tr><td>8</td><td>2.089</td><td>2.633</td><td><strong>1.26&times;</strong></td><td>0.887 / 0.726</td><td>3.848 / 3.033</td><td>626 / 2239</td></tr>
+          <tr><td>16</td><td>2.516</td><td>2.635</td><td><strong>1.05&times;</strong></td><td>1.495 / 1.458</td><td>6.337 / 6.045</td><td>3452 / 5227</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p>MOSS streaming throughput plateaus at ~2.6 qps from c=4 onward. Improving high-concurrency streaming scalability is on the roadmap for future work.</p>
 
     <h3>MOSS-TTS-Local-v1.5 &mdash; Non-streaming (vanilla vs perf)</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-moss-nostream.png" alt="MOSS TTS Non-streaming Benchmark" loading="lazy">
-      <figcaption>MOSS-TTS-Local-v1.5 &mdash; Non-streaming Benchmark (vanilla vs perf)</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>Concurrency</th><th>qps vanilla</th><th>qps perf</th><th>Speedup</th><th>RTF van / perf</th><th>Latency mean (s) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>0.968</td><td>2.974</td><td><strong>3.07&times;</strong></td><td>0.475 / 0.157</td><td>2.069 / 0.676</td></tr>
+          <tr><td>4</td><td>1.816</td><td>4.870</td><td><strong>2.68&times;</strong></td><td>0.504 / 0.192</td><td>2.200 / 0.821</td></tr>
+          <tr><td>8</td><td>3.017</td><td>6.111</td><td><strong>2.03&times;</strong></td><td>0.606 / 0.310</td><td>2.645 / 1.306</td></tr>
+          <tr><td>16</td><td>4.668</td><td>6.144</td><td><strong>1.32&times;</strong></td><td>0.781 / 0.623</td><td>3.406 / 2.593</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3>Reproducing the Benchmarks</h3>
 
@@ -795,35 +831,71 @@ done</code></pre>
 
     <h3>Higgs TTS &mdash; 流式（vanilla vs perf）</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-higgs-stream.png" alt="Higgs TTS 流式基准测试" loading="lazy">
-      <figcaption>Higgs TTS &mdash; 流式基准测试（vanilla vs perf）</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>qps vanilla</th><th>qps perf</th><th>加速比</th><th>RTF van / perf</th><th>延迟均值 (s) van / perf</th><th>TTFP (ms) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>1.286</td><td>2.908</td><td><strong>2.26&times;</strong></td><td>0.373 / 0.166</td><td>1.555 / 0.688</td><td>162 / 153</td></tr>
+          <tr><td>4</td><td>2.411</td><td>5.934</td><td><strong>2.46&times;</strong></td><td>0.393 / 0.163</td><td>1.658 / 0.673</td><td>166 / 109</td></tr>
+          <tr><td>8</td><td>4.313</td><td>9.856</td><td><strong>2.29&times;</strong></td><td>0.442 / 0.196</td><td>1.852 / 0.810</td><td>182 / 126</td></tr>
+          <tr><td>16</td><td>7.077</td><td>14.634</td><td><strong>2.07&times;</strong></td><td>0.533 / 0.261</td><td>2.247 / 1.088</td><td>214 / 176</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p>优化在所有并发级别上带来稳定的 <strong>~2.1&ndash;2.5 倍</strong>吞吐量提升，RTF 大致减半，首音频延迟（TTFP）也有所降低。</p>
 
     <h3>Higgs TTS &mdash; 非流式（vanilla vs perf）</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-higgs-nostream.png" alt="Higgs TTS 非流式基准测试" loading="lazy">
-      <figcaption>Higgs TTS &mdash; 非流式基准测试（vanilla vs perf）</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>qps vanilla</th><th>qps perf</th><th>加速比</th><th>RTF van / perf</th><th>延迟均值 (s) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>1.412</td><td>2.941</td><td><strong>2.08&times;</strong></td><td>0.342 / 0.164</td><td>1.416 / 0.680</td></tr>
+          <tr><td>4</td><td>2.552</td><td>5.715</td><td><strong>2.24&times;</strong></td><td>0.372 / 0.166</td><td>1.568 / 0.699</td></tr>
+          <tr><td>8</td><td>4.426</td><td>10.077</td><td><strong>2.28&times;</strong></td><td>0.423 / 0.191</td><td>1.771 / 0.793</td></tr>
+          <tr><td>16</td><td>8.156</td><td>15.174</td><td><strong>1.86&times;</strong></td><td>0.464 / 0.245</td><td>1.937 / 1.028</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3>MOSS-TTS-Local-v1.5 &mdash; 流式（vanilla vs perf）</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-moss-stream.png" alt="MOSS TTS 流式基准测试" loading="lazy">
-      <figcaption>MOSS-TTS-Local-v1.5 &mdash; 流式基准测试（vanilla vs perf）</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>qps vanilla</th><th>qps perf</th><th>加速比</th><th>RTF van / perf</th><th>延迟均值 (s) van / perf</th><th>TTFP (ms) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>0.817</td><td>2.256</td><td><strong>2.76&times;</strong></td><td>0.561 / 0.206</td><td>2.448 / 0.888</td><td>257 / 261</td></tr>
+          <tr><td>4</td><td>1.444</td><td>2.649</td><td><strong>1.83&times;</strong></td><td>0.635 / 0.356</td><td>2.768 / 1.509</td><td>280 / 726</td></tr>
+          <tr><td>8</td><td>2.089</td><td>2.633</td><td><strong>1.26&times;</strong></td><td>0.887 / 0.726</td><td>3.848 / 3.033</td><td>626 / 2239</td></tr>
+          <tr><td>16</td><td>2.516</td><td>2.635</td><td><strong>1.05&times;</strong></td><td>1.495 / 1.458</td><td>6.337 / 6.045</td><td>3452 / 5227</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p>MOSS 流式吞吐量从 c=4 开始在约 2.6 qps 处趋于平稳。改进高并发流式可扩展性已列入未来工作路线图。</p>
 
     <h3>MOSS-TTS-Local-v1.5 &mdash; 非流式（vanilla vs perf）</h3>
 
-    <figure class="post-img">
-      <img src="../assets/blog/tts-opt-bench-moss-nostream.png" alt="MOSS TTS 非流式基准测试" loading="lazy">
-      <figcaption>MOSS-TTS-Local-v1.5 &mdash; 非流式基准测试（vanilla vs perf）</figcaption>
-    </figure>
+    <div class="post-table">
+      <table>
+        <thead>
+          <tr><th>并发</th><th>qps vanilla</th><th>qps perf</th><th>加速比</th><th>RTF van / perf</th><th>延迟均值 (s) van / perf</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>2</td><td>0.968</td><td>2.974</td><td><strong>3.07&times;</strong></td><td>0.475 / 0.157</td><td>2.069 / 0.676</td></tr>
+          <tr><td>4</td><td>1.816</td><td>4.870</td><td><strong>2.68&times;</strong></td><td>0.504 / 0.192</td><td>2.200 / 0.821</td></tr>
+          <tr><td>8</td><td>3.017</td><td>6.111</td><td><strong>2.03&times;</strong></td><td>0.606 / 0.310</td><td>2.645 / 1.306</td></tr>
+          <tr><td>16</td><td>4.668</td><td>6.144</td><td><strong>1.32&times;</strong></td><td>0.781 / 0.623</td><td>3.406 / 2.593</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <h3>复现基准测试</h3>
 
