@@ -93,9 +93,43 @@ const i18n = {
 /* ========================================
    Blog / Video Post Data
    Add new posts here — they render automatically.
+   url is a string, or { en, zh } when the target page has per-language versions.
    ======================================== */
 
 const posts = [
+  {
+    type: 'blog',
+    date: '2026-08-18',
+    title: { en: 'Advanced CUDA Graph Techniques in SGLang',
+             zh: 'SGLang 的 CUDA Graph 进阶' },
+    desc:  { en: 'Breakable CUDA Graph, proposed and first open-sourced in SGLang, inserts eager breaks directly during capture; full CUDA Graph for prefill pins both dynamic dimensions with token buckets and zero-length sentinels. An interactive visualized tutorial.',
+             zh: 'Breakable CUDA Graph 由 SGLang 提出并率先开源，通过在 capture 过程中直接插入 eager 断点，解决了靠编译器切图带来的启动慢、兼容性差的问题；prefill 的 full CUDA Graph 也一并展开。交互式可视化教程。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/breakable-cuda-graph/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/breakable-cuda-graph/' },
+    tags: ['SGLang', 'CUDA Graph', 'Visualized']
+  },
+  {
+    type: 'blog',
+    date: '2026-07-28',
+    title: { en: 'Kimi K3: Architecture and SGLang Day-0 Support',
+             zh: 'Kimi K3：架构与 SGLang Day-0 Support' },
+    desc:  { en: 'From MHA to DeltaNet to KDA — how Kimi K3\'s hybrid architecture supports 2.8T parameters and a 1M context, and how SGLang runs K3 efficiently with a unified memory pool, chunked PP, and DCP. An interactive visualized tutorial.',
+             zh: '从 MHA 到 DeltaNet 再到 KDA，详解不同注意力机制；Kimi K3 架构如何支撑 2.8T 参数 + 1M 上下文的混合架构；以及 SGLang 如何用统一显存池、chunked PP 和 DCP 把 K3 高效跑起来。交互式可视化教程。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/kimi-k3-day0-support/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/kimi-k3-day0-support/' },
+    tags: ['SGLang', 'Kimi K3', 'Visualized']
+  },
+  {
+    type: 'blog',
+    date: '2026-07-28',
+    title: { en: 'Continuous Batching: From Static to Iteration-Level Scheduling',
+             zh: 'Continuous Batching：从 static 到 iteration-level scheduling' },
+    desc:  { en: 'A visual walkthrough of why static batching wastes GPU time and how continuous batching fixes it, with iteration-by-iteration comparisons. An interactive visualized tutorial.',
+             zh: '通过可视化工具讲解 static batching 为什么浪费 GPU，以及 continuous batching 的优化方案，提供逐 iteration 对比。交互式可视化教程。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/continuous-batching/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/continuous-batching/' },
+    tags: ['SGLang', 'Batching', 'Visualized']
+  },
   {
     type: 'blog',
     date: '2026-07-19',
@@ -216,9 +250,10 @@ function renderBlog() {
       return '<span class="bc-tag">' + t + '</span>';
     }).join('');
 
-    var isExternal = p.url.startsWith('http');
+    var url = typeof p.url === 'string' ? p.url : (p.url[currentLang] || p.url.en);
+    var isExternal = url.startsWith('http');
     var linkAttrs = isExternal ? ' target="_blank" rel="noopener"' : '';
-    return '<a href="' + p.url + '" class="blog-card anim-item visible"' + linkAttrs + '>'
+    return '<a href="' + url + '" class="blog-card anim-item visible"' + linkAttrs + '>'
       + '<div class="bc-top">'
       + '<span class="bc-type' + typeClass + '">' + typeLabel + '</span>'
       + '<span class="bc-date">' + p.date + '</span>'
