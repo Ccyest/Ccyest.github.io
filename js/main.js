@@ -99,6 +99,17 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
+    date: '2026-08-22',
+    title: { en: 'Unified Radix Cache: One Tree for Hybrid Model Prefix Caching',
+             zh: 'Unified Radix Cache：一棵树覆盖混合模型前缀缓存' },
+    desc:  { en: 'Hybrid models mix full attention, sliding window, and recurrent layers, so one prefix no longer has a single reuse boundary. SGLang keeps one radix tree and lets FULL/SWA/MAMBA components vote out a safe boundary, with tiered HiCache and session-aware eviction on the same prefix identity. An interactive visualized tutorial.',
+             zh: '混合模型把 full attention、滑动窗口和递归层混进同一个模型，一段前缀不再有唯一复用边界。SGLang 只留一棵 radix 树，由 FULL/SWA/MAMBA 组件投票出安全边界，HiCache 分层与会话感知驱逐建立在同一个前缀身份上。交互式可视化教程。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/unified-radix-cache/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/unified-radix-cache/' },
+    tags: ['SGLang', 'Radix Cache', 'Visualized']
+  },
+  {
+    type: 'blog',
     date: '2026-08-18',
     title: { en: 'Advanced CUDA Graph Techniques in SGLang',
              zh: 'SGLang 的 CUDA Graph 进阶' },
