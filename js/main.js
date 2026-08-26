@@ -100,10 +100,10 @@ const posts = [
   {
     type: 'blog',
     date: '2026-08-26',
-    title: { en: 'DSpark in SGLang: Confidence-Sized Verification',
-             zh: 'DSpark in SGLang：按置信度定验证预算的投机解码' },
-    desc:  { en: 'Speculative decoding sours at high load: the target verifies B×K tokens every step. DSpark drafts a block per forward, scores each token\'s survival, and SGLang sizes a per-request verify budget and replays the front-packed batch as a genuinely smaller CUDA graph. An interactive visualized tutorial.',
-             zh: '投机解码在高负载下会变亏：target 每步要验证 B×K 个 token。DSpark 一次 forward 起草一整块并给每个草稿打存活分，SGLang 据此逐请求定验证预算，再把 front-pack 后的批次回放成真正更小的 CUDA graph。交互式可视化教程。' },
+    title: { en: 'DFlash to DSpark: Speculative Decoding in SGLang',
+             zh: 'DFlash 到 DSpark：SGLang 的投机解码两代演进' },
+    desc:  { en: 'DFlash drafts a whole block in one forward with KV injection from the target; DSpark adds a sequential head and confidence-sized per-request verify budgets that SGLang replays as genuinely smaller CUDA graphs — and both are one-flag serving options for DeepSeek-V4. An interactive visualized tutorial.',
+             zh: 'DFlash 靠 KV injection 一次 forward 起草一整块；DSpark 再加 sequential head 和按置信度定的逐请求验证预算，SGLang 把裁剪后的批次回放成真正更小的 CUDA graph。两者都是 DeepSeek-V4 上一个参数即开的 serving 选项。交互式可视化教程。' },
     url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/dspark-speculative-decoding/',
            zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/dspark-speculative-decoding/' },
     tags: ['SGLang', 'Speculative Decoding', 'Visualized']
