@@ -100,6 +100,17 @@ const posts = [
   {
     type: 'blog',
     date: '2026-08-26',
+    title: { en: 'GLM-5.3-Flash: 4.4× Less KV Cache at 1M Context, and SGLang Day-0 Support',
+             zh: 'GLM-5.3-Flash：1M 上下文下 KV cache 省 4.4 倍，与 SGLang Day-0 Support' },
+    desc:  { en: '34 KDA linear-attention layers keep a fixed-size state instead of KV, the 11 global layers use DSA so each step reads only the top-2048 entries an indexer picks, IndexPool shrinks the indexer 4×, and mHC stabilizes a 4-stream residual; SGLang runs it day-0. An interactive visualized tutorial.',
+             zh: '34 层 KDA linear attention 用固定状态取代 KV，11 层全局层改用 DSA 每步只读 indexer 选出的 top-2048 条，IndexPool 把 indexer 再压 4 倍，mHC 稳住 4 路残差流；SGLang day-0 即可运行。交互式可视化教程。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/glm-5-3-flash/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/glm-5-3-flash/' },
+    tags: ['SGLang', 'GLM-5.3-Flash', 'Visualized']
+  },
+  {
+    type: 'blog',
+    date: '2026-08-26',
     title: { en: 'DFlash to DSpark: Speculative Decoding in SGLang',
              zh: 'DFlash 到 DSpark：SGLang 的投机解码两代演进' },
     desc:  { en: 'DFlash drafts a whole block in one forward with KV injection from the target; DSpark adds a sequential head and confidence-sized per-request verify budgets that SGLang replays as genuinely smaller CUDA graphs — and both are one-flag serving options for DeepSeek-V4. An interactive visualized tutorial.',
