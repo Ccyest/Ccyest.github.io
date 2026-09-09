@@ -100,17 +100,6 @@ const posts = [
   {
     type: 'blog',
     date: '2026-08-26',
-    title: { en: 'GLM-5.3-Flash: 4.4× Less KV Cache at 1M Context, and SGLang Day-0 Support',
-             zh: 'GLM-5.3-Flash：1M 上下文下 KV cache 省 4.4 倍，与 SGLang Day-0 Support' },
-    desc:  { en: 'GLM-5.3-Flash interleaves linear-attention and sparse-attention layers so long-context cost stops growing with the history: 3.0× less attention compute and 4.4× smaller KV cache versus GLM-5.3, and SGLang runs it day-0. An interactive visualized tutorial.',
-             zh: 'GLM-5.3-Flash 把 linear attention 层和 sparse attention 层交错起来，长上下文开销不再随历史增长：对比 GLM-5.3，attention 计算量降 3.0 倍、KV cache 降 4.4 倍，SGLang day-0 即可运行。交互式可视化教程。' },
-    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/glm-5-3-flash/',
-           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/glm-5-3-flash/' },
-    tags: ['SGLang', 'GLM-5.3-Flash', 'Visualized']
-  },
-  {
-    type: 'blog',
-    date: '2026-08-26',
     title: { en: 'DFlash to DSpark: Speculative Decoding in SGLang',
              zh: 'DFlash 到 DSpark：SGLang 的投机解码两代演进' },
     desc:  { en: 'DFlash drafts a whole block in one forward with KV injection from the target; DSpark adds a sequential head and confidence-sized per-request verify budgets that SGLang replays as genuinely smaller CUDA graphs — and both are one-flag serving options for DeepSeek-V4. An interactive visualized tutorial.',
