@@ -99,6 +99,17 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
+    date: '2026-09-09',
+    title: { en: 'Unified Memory in SGLang: 1.9× Prefix Retention Under Cache Pressure',
+             zh: 'SGLang Unified Memory：显存吃紧时，前缀保留量达到 1.9 倍' },
+    desc:  { en: 'How SGLang shares GPU capacity between KV caches and recurrent states, moves pages without breaking references, and stops eviction when enough space is available. Interactive diagrams with release history and a controlled cache-pressure benchmark.',
+             zh: 'SGLang 如何让 KV 缓存与循环状态共享 GPU 容量，搬移页面后保持引用有效，并在空间足够时停止驱逐。交互图解，附发布历史和受控缓存压力基准。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/unified-memory/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/unified-memory/' },
+    tags: ['SGLang', 'Memory Management', 'Visualized']
+  },
+  {
+    type: 'blog',
     date: '2026-08-26',
     title: { en: 'DFlash to DSpark: Speculative Decoding in SGLang',
              zh: 'DFlash 到 DSpark：SGLang 的投机解码两代演进' },
