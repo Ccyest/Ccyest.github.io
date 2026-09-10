@@ -99,11 +99,11 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
-    date: '2026-09-10',
-    title: { en: 'HiCache in SGLang: up to 6× Throughput with Hierarchical KV Caching',
-             zh: 'SGLang HiCache：分层 KV 缓存让吞吐最高提升至 6 倍' },
-    desc:  { en: 'How SGLang retains KV across GPU memory, CPU memory, and external storage. Five interactive diagrams explain the prefix tree, memory layouts, layer-wise loading, prefetch tradeoffs, and benchmark results.',
-             zh: 'SGLang 如何在 GPU 显存、CPU 内存和外部存储中保留 KV。五张交互图讲解前缀树、内存布局、逐层加载、预取取舍和基准结果。' },
+    date: '2026-09-11',
+    title: { en: 'HiCache in SGLang: Hybrid-Model Caching with up to 15.5× Input Throughput',
+             zh: 'SGLang HiCache：支持混合模型，输入吞吐最高达 15.5 倍' },
+    desc:  { en: 'Updated through September 2026: 22 verified PR milestones and 11 diagrams covering hybrid-model state, MTP/EAGLE/DSpark recovery, DCP, session-aware eviction, buffer-only host memory, and AMD/Ascend adaptations.',
+             zh: '更新至 2026 年 9 月：22 个已核验 PR 里程碑与 11 张图，覆盖混合模型状态、MTP/EAGLE/DSpark 恢复、DCP、会话感知驱逐、buffer-only host 内存及 AMD/Ascend 适配。' },
     url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/hicache/',
            zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/hicache/' },
     tags: ['SGLang', 'KV Cache', 'Visualized']
