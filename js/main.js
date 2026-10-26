@@ -104,6 +104,17 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
+    date: '2026-10-26',
+    title: { en: 'Storage Hardware Behind SGLang HiCache: HBM, DRAM, and SSDs',
+             zh: 'SGLang HiCache 的存储硬件：HBM、DRAM 与 SSD 如何分工' },
+    desc:  { en: 'From DRAM cells and HBM packaging to PCIe links and NAND flash: why each HiCache tier uses different hardware, and when restoring KV beats recomputation. Includes three interactive diagrams.',
+             zh: '从 DRAM 存储单元、HBM 封装到 PCIe 链路与 NAND flash，解释 HiCache 每层的硬件选择，以及何时恢复 KV 比重算更划算。含三张交互图。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/hicache-storage/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/hicache-storage/' },
+    tags: ['SGLang', 'Memory', 'Visualized']
+  },
+  {
+    type: 'blog',
     date: '2026-09-11',
     title: { en: 'HiCache in SGLang: Hybrid-Model Caching with up to 15.5× Input Throughput',
              zh: 'SGLang HiCache：支持混合模型，输入吞吐最高达 15.5 倍' },
