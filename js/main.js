@@ -104,6 +104,17 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
+    date: '2026-11-24',
+    title: { en: 'HiSparse in SGLang: Up to 5× Throughput for Sparse Attention on Long Contexts',
+             zh: 'SGLang HiSparse：稀疏注意力在长上下文下吞吐最高 5 倍' },
+    desc:  { en: 'How sparse attention selects its top-k tokens, why the full KV cache still fills GPU memory, and how SGLang HiSparse keeps it in CPU memory behind a small hot buffer on the GPU. Includes five interactive diagrams.',
+             zh: '稀疏注意力怎样选出 top-k 个 token，为什么完整 KV cache 仍然占满 GPU 显存，以及 SGLang HiSparse 怎样把它放到 CPU 内存、GPU 上只留一个小的 hot buffer。含五张交互图。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/hisparse/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/hisparse/' },
+    tags: ['SGLang', 'Sparse Attention', 'Visualized']
+  },
+  {
+    type: 'blog',
     date: '2026-10-26',
     title: { en: 'Storage Hardware Behind SGLang HiCache: HBM, DRAM, and SSDs',
              zh: 'SGLang HiCache 的存储硬件：HBM、DRAM 与 SSD 如何分工' },
