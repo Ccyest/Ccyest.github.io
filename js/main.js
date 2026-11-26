@@ -107,8 +107,8 @@ const posts = [
     date: '2026-11-26',
     title: { en: 'The Evolution of the SGLang Runtime: An Overview of Its Optimizations, from RadixAttention to Agent Workloads',
              zh: 'SGLang runtime 的演进：从 RadixAttention 到 agent 负载的优化总览' },
-    desc:  { en: 'Based on Ying Sheng\'s MIT lecture, in four parts: the original frontend and RadixAttention design, the cache rework for hybrid models and memory tiers, the execution path, and agent and RL workloads. What the runtime can infer, and what the application still has to declare. Includes 32 diagrams.',
-             zh: '基于 Ying Sheng 的 MIT 讲座，分四部分：最初的前端与 RadixAttention 设计，为混合模型和多级内存重做的缓存，执行路径，以及 agent 和 RL 负载。哪些信息 runtime 能自己推断，哪些仍要由应用声明。含 32 张图。' },
+    desc:  { en: 'Based on Ying Sheng\'s MIT lecture, in four parts: the original frontend and RadixAttention design, the cache rework for hybrid models and memory tiers, the execution path, and agent and RL workloads. What the runtime can infer, and what the application still has to declare. Includes 23 animated diagrams.',
+             zh: '基于 Ying Sheng 的 MIT 讲座，分四部分：最初的前端与 RadixAttention 设计，为混合模型和多级内存重做的缓存，执行路径，以及 agent 和 RL 负载。哪些信息 runtime 能自己推断，哪些仍要由应用声明。含 23 张动画图。' },
     url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/sglang-runtime-evolution/',
            zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/sglang-runtime-evolution/' },
     tags: ['SGLang', 'Runtime', 'Visualized']
