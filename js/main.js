@@ -104,6 +104,17 @@ const i18n = {
 const posts = [
   {
     type: 'blog',
+    date: '2026-11-26',
+    title: { en: 'How SGLang\'s Cache Evolved for Agents: 4.7× as Many Long-Context Requests, 1.70× Faster Prefill',
+             zh: 'SGLang 的缓存如何为 agent 演进：长上下文请求放下 4.7 倍，prefill 快 1.70 倍' },
+    desc:  { en: 'Based on Ying Sheng\'s MIT lecture: from RadixAttention and fork hints to hybrid-model caches, unified memory, overlap scheduling, and agent sessions. What the runtime can infer from tokens, and what the application still has to declare. Includes 13 interactive diagrams.',
+             zh: '基于 Ying Sheng 的 MIT 讲座：从 RadixAttention 和 fork 提示，到混合模型缓存、unified memory、overlap 调度和 agent session。哪些结构 runtime 能从 token 里推断，哪些仍要由应用声明。含 13 张交互图。' },
+    url: { en: 'https://yichizhang.dev/AI-Infra-Visualized/en/lessons/sglang-runtime-evolution/',
+           zh: 'https://yichizhang.dev/AI-Infra-Visualized/lessons/sglang-runtime-evolution/' },
+    tags: ['SGLang', 'KV Cache', 'Visualized']
+  },
+  {
+    type: 'blog',
     date: '2026-11-24',
     title: { en: 'HiSparse in SGLang: Up to 5× Throughput for Sparse Attention on Long Contexts',
              zh: 'SGLang HiSparse：稀疏注意力在长上下文下吞吐最高 5 倍' },
